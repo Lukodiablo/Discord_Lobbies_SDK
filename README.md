@@ -1,4 +1,4 @@
-# Discord VS Code Extension 🎮
+# Discord Lobbies SDK 🎮
 
 Bring Discord directly into VS Code. Chat with friends, collaborate in lobbies, share code snippets, and show what you're coding with privacy-first Rich Presence.
 
@@ -14,11 +14,16 @@ Bring Discord directly into VS Code. Chat with friends, collaborate in lobbies, 
 
 ## 🚀 Getting Started
 
-### Step 1: Install
-Click **Install** button above (no setup needed!)
+### Prerequisites
+- **Discord Desktop App** - Must be running for all features to work
+- **VS Code 1.80+** - Required for this extension
+- **Discord SDK** - Download from [Discord Developer Portal](https://discord.com/developers) (see [Developer Notes](DEVELOPER_NOTES.md) for details)
+
+### Step 1: Install the Extension
+Install this extension from the VS Code Marketplace (search for "Discord Lobbies SDK")
 
 ### Step 2: Authenticate
-⚠️ **Make sure Discord desktop app is running first!**
+⚠️ **Make sure Discord desktop app is running!**
 
 1. Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
 2. Type **"Discord: Authenticate"**
