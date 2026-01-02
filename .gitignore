@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Rust
+rust-native/target/
+*.rlib
+*.so
+*.dylib
+*.a
+
+# Discord SDK (large binaries - download separately)
+DiscordSocialSdk-*/
+discord-sdk/
+
+# Native addon build artifacts
+native/build/
+*.node
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Rust build cache
+Cargo.lock

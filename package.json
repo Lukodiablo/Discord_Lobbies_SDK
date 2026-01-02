@@ -1,0 +1,347 @@
+{
+  "name": "lobbies-sdk",
+  "displayName": "Discord Lobbies SDK",
+  "description": "Lobbies SDK integration in VS Code with messaging and voice",
+  "version": "0.0.1",
+  "publisher": "Lukodiablo0986",
+  "icon": "media/logo.png",
+  "author": {
+    "name": "Lukodiablo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lukodiablo/discord-extension.git"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Chat",
+    "Visualization"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "discord-vscode.authenticate",
+        "title": "Discord: Authenticate"
+      },
+      {
+        "command": "discord-vscode.logout",
+        "title": "Discord: Logout"
+      },
+      {
+        "command": "discord-vscode.openChat",
+        "title": "Discord: Open Chat"
+      },
+      {
+        "command": "discord-vscode.joinVoice",
+        "title": "Discord: Join Voice Channel"
+      },
+      {
+        "command": "discord-vscode.selectChannel",
+        "title": "Discord: Select Channel"
+      },
+      {
+        "command": "discord-vscode.createLobby",
+        "title": "Discord: Create Lobby"
+      },
+      {
+        "command": "discord-vscode.listLobbies",
+        "title": "Discord: List Lobbies"
+      },
+      {
+        "command": "discord-vscode.joinLobby",
+        "title": "Discord: Join Lobby"
+      },
+      {
+        "command": "discord-vscode.sendLobbyMessage",
+        "title": "Discord: Send Lobby Message"
+      },
+      {
+        "command": "discord-vscode.sendCodeToLobby",
+        "title": "Discord: Share Code to Lobby"
+      },
+      {
+        "command": "discord-vscode.toggleMuteLobby",
+        "title": "Discord: Toggle Microphone"
+      },
+      {
+        "command": "discord-vscode.toggleDeafLobby",
+        "title": "Discord: Toggle Audio"
+      },
+      {
+        "command": "discord-vscode.connectLobbyVoice",
+        "title": "Discord: Connect to Lobby Voice"
+      },
+      {
+        "command": "discord-vscode.disconnectLobbyVoice",
+        "title": "Discord: Disconnect from Lobby Voice"
+      },
+      {
+        "command": "discord-vscode.leaveLobby",
+        "title": "Discord: Leave Lobby"
+      },
+      {
+        "command": "discord-vscode.inviteToLobby",
+        "title": "Invite to Lobby"
+      },
+      {
+        "command": "discord-vscode.sendDMToFriend",
+        "title": "Send Direct Message"
+      },
+      {
+        "command": "discord-vscode.openSharedCode",
+        "title": "Discord: Open Shared Code"
+      },
+      {
+        "command": "discord-vscode.viewSharedCode",
+        "title": "View Code"
+      },
+      {
+        "command": "discord-vscode.copySharedCode",
+        "title": "Copy Code"
+      },
+      {
+        "command": "discord-vscode.deleteSharedCode",
+        "title": "Delete"
+      },
+      {
+        "command": "discord-vscode.toggleRichPresence",
+        "title": "Toggle Rich Presence Setting"
+      },
+      {
+        "command": "discord-vscode.testConnection",
+        "title": "Discord: Test Connection"
+      },
+      {
+        "command": "discord-vscode.resetSetupWizard",
+        "title": "Discord: Reset Setup Wizard"
+      },
+      {
+        "command": "discord-vscode.showQuickAccess",
+        "title": "Discord: Quick Access",
+        "icon": "$(play)"
+      }
+    ],
+    "views": {
+      "discord": [
+        {
+          "id": "discord-vscode.serverTree",
+          "name": "Servers & Channels",
+          "icon": "$(server)"
+        },
+        {
+          "id": "discord-vscode.voiceChannelsView",
+          "name": "Voice Channels",
+          "icon": "$(symbol-parameter)"
+        },
+        {
+          "id": "discord-vscode.lobbiesView",
+          "name": "Lobbies",
+          "icon": "$(group)"
+        },
+        {
+          "id": "discord-vscode.lobbyChatView",
+          "name": "Lobby Chat",
+          "icon": "$(comment-discussion)"
+        },
+        {
+          "id": "discord-vscode.directMessagesView",
+          "name": "Direct Messages",
+          "icon": "$(mail)"
+        },
+        {
+          "id": "discord-vscode.sharedCode",
+          "name": "Shared Code",
+          "icon": "$(code)"
+        },
+        {
+          "id": "discord-vscode.richPresenceView",
+          "name": "Rich Presence",
+          "icon": "$(broadcast)"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "discord-vscode.showQuickAccess",
+          "when": "view == disrd-vscode.serverTree",
+          "group": "inline@0"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "discord-vscode.showQuickAccess"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "discord-vscode.inviteToLobby",
+          "when": "view == discord-vscode.serverTree && viewItem == friend",
+          "group": "inline@1"
+        },
+        {
+          "command": "discord-vscode.sendDMToFriend",
+          "when": "view == discord-vscode.serverTree && viewItem == friend",
+          "group": "inline@2"
+        },
+        {
+          "command": "discord-vscode.sendLobbyMessage",
+          "when": "view == discord-vscode.lobbiesView && viewItem == send_message",
+          "group": "inline@1"
+        },
+        {
+          "command": "discord-vscode.sendCodeToLobby",
+          "when": "view == discord-vscode.lobbiesView && viewItem == share_code",
+          "group": "inline@2"
+        },
+        {
+          "command": "discord-vscode.toggleMuteLobby",
+          "when": "view == discord-vscode.lobbiesView && viewItem == toggle_mute",
+          "group": "inline@3"
+        },
+        {
+          "command": "discord-vscode.toggleDeafLobby",
+          "when": "view == discord-vscode.lobbiesView && viewItem == toggle_deaf",
+          "group": "inline@4"
+        },
+        {
+          "command": "discord-vscode.leaveLobby",
+          "when": "view == discord-vscode.lobbiesView && viewItem == leave",
+          "group": "inline@5"
+        },
+        {
+          "command": "discord-vscode.viewSharedCode",
+          "when": "view == discord-vscode.sharedCode && viewItem == sharedCode",
+          "group": "inline@1"
+        },
+        {
+          "command": "discord-vscode.copySharedCode",
+          "when": "view == discord-vscode.sharedCode && viewItem == sharedCode",
+          "group": "inline@2"
+        },
+        {
+          "command": "discord-vscode.deleteSharedCode",
+          "when": "view == discord-vscode.sharedCode && viewItem == sharedCode",
+          "group": "inline@3"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "discord",
+          "title": "Discord Lobbies SDK",
+          "icon": "media/logo_BW.svg"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Discord Lobbies SDK",
+      "properties": {
+        "discord-vscode.clientId": {
+          "type": "string",
+          "default": "",
+          "description": "Discord OAuth Client ID"
+        },
+        "discord-vscode.clientSecret": {
+          "type": "string",
+          "default": "",
+          "description": "Discord OAuth Client Secret"
+        },
+        "discord-vscode.autoJoinVoice": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically join voice channel on startup"
+        },
+        "discord.richPresence.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Discord Rich Presence integration (opt-in for privacy)"
+        },
+        "discord.richPresence.showFileName": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show current file name in presence (⚠️ Privacy: disabled by default)"
+        },
+        "discord.richPresence.showFileLine": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show current line number in presence (requires showFileName)"
+        },
+        "discord.richPresence.showLanguage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show programming language icon (generic, safe to share)"
+        },
+        "discord.richPresence.showProject": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show project/workspace name (⚠️ Privacy: disabled by default)"
+        },
+        "discord.richPresence.showLobby": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Discord lobby status when in one (collaborative)"
+        },
+        "discord.richPresence.showVoiceChannel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show voice channel status when connected"
+        },
+        "discord.richPresence.idleTimeout": {
+          "type": "number",
+          "default": 300000,
+          "minimum": 0,
+          "description": "Auto-hide presence after idle time in milliseconds (0 to disable, default 5 minutes)"
+        },
+        "discord.showQuickAccessOnStartup": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show Quick Access panel (commands dashboard) on extension startup"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --external:https --external:http --external:zlib --external:fs --external:path --external:url --external:../native/build/Release/discord_social_sdk.node --platform=node --target=node14",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "build:addon": "cd native && npm install && npm run build",
+    "clean:addon": "cd native && npm run clean",
+    "rebuild:addon": "cd native && npm run rebuild"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vscode/test-electron": "^2.3.0",
+    "@vscode/vsce": "^3.7.1",
+    "esbuild": "^0.27.1",
+    "eslint": "^8.40.0",
+    "glob": "^10.2.0",
+    "mocha": "^10.2.0",
+    "node-addon-api": "^7.1.0",
+    "node-gyp": "^9.4.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "ws": "^8.18.3"
+  }
+}

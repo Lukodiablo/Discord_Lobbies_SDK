@@ -1,0 +1,6 @@
+<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black and white version for activity bar icon -->
+  <circle cx="500" cy="500" r="450" fill="none" stroke="currentColor" stroke-width="80"/>
+  <circle cx="500" cy="500" r="350" fill="none" stroke="currentColor" stroke-width="40"/>
+  <circle cx="500" cy="500" r="200" fill="currentColor"/>
+</svg>

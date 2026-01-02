@@ -1,0 +1,23 @@
+{
+  "name": "discord-social-sdk-rust",
+  "version": "1.0.0",
+  "description": "Rust-based Discord Social SDK binding for Node.js",
+  "main": "index.js",
+  "scripts": {
+    "build": "cargo build --lib --release",
+    "build-debug": "cargo build --lib",
+    "clean": "cargo clean",
+    "test": "cargo test"
+  },
+  "keywords": [
+    "discord",
+    "social-sdk",
+    "rust",
+    "native"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

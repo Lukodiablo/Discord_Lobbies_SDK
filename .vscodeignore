@@ -1,0 +1,112 @@
+# ============================================================================
+# What TO INCLUDE in VSIX:
+# - dist/extension.js (minified TypeScript bundle)
+# - dist/extension.js.map (source map)
+# - native/build/Release/discord_social_sdk.node (OUR C++ addon - REQUIRED)
+# - rust-native/target/release/lobbies-sdk (OUR Rust subprocess - REQUIRED)
+# - README.md, LICENSE, package.json (metadata)
+# - media/* (logos/icons)
+# ============================================================================
+
+# ============================================================================
+# EXCLUDE: Build artifacts and development files (but KEEP the binaries!)
+# ============================================================================
+native/src/
+native/binding.gyp
+native/find-sdk.js
+native/fix-toolset.js
+native/README.md
+native/package.json
+native/package-lock.json
+native/index.js
+native/.gitignore
+native/discord-sdk/
+native/build/Makefile
+native/build/binding.Makefile
+native/build/config.gypi
+native/build/discord_social_sdk.target.mk
+native/build/.deps/
+native/build/build/
+native/build/obj.target/
+native/build/.node-gyp/
+native/build/node_gyp_bins/
+native/build/Release/libdiscord_partner_sdk.so
+native/build/Release/node_modules/
+native/build/Release/.deps/
+native/build/Release/obj.target/
+native/node_modules/
+
+rust-native/src/
+rust-native/Cargo.toml
+rust-native/Cargo.lock
+rust-native/Makefile
+rust-native/build.rs
+rust-native/package.json
+rust-native/README.md
+rust-native/test_*.sh
+rust-native/target/debug/
+rust-native/target/release/build/
+rust-native/target/release/deps/
+rust-native/target/release/examples/
+rust-native/target/release/incremental/
+rust-native/target/release/.fingerprint/
+rust-native/target/release/*.d
+rust-native/target/release/*.rlib
+rust-native/target/release/*.so
+rust-native/target/release/libdiscord*
+rust-native/target/.rustc_info.json
+rust-native/target/CACHEDIR.TAG
+rust-native/target/flycheck0/
+rust-native/.git/
+rust-native/.gitignore
+
+# ============================================================================
+# EXCLUDE: Development files
+# ============================================================================
+.vscode/
+.vscode-test/
+.github/
+.git/
+.gitignore
+.env
+.env.local
+
+# ============================================================================
+# EXCLUDE: Source TypeScript (compiled to dist/extension.js)
+# ============================================================================
+src/
+tsconfig.json
+**/*.ts
+!dist/**
+
+# ============================================================================
+# EXCLUDE: Old TypeScript build output (compiled to dist/)
+# ============================================================================
+out/
+
+# ============================================================================
+# EXCLUDE: Dependencies
+# ============================================================================
+node_modules/
+package-lock.json
+
+# ============================================================================
+# EXCLUDE: User-provided SDK (not part of extension)
+# ============================================================================
+discord_social_sdk/
+
+# ============================================================================
+# EXCLUDE: Testing and temp files
+# ============================================================================
+**/*.test.ts
+**/*.spec.ts
+*.tmp
+*.code-workspace
+auto.sh
+enhance.txt
+**/*.spec.ts
+
+# Temporary files
+*.tmp
+auto.sh
+enhance.txt

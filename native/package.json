@@ -1,0 +1,26 @@
+{
+  "name": "discord-social-sdk-native",
+  "version": "1.0.0",
+  "description": "Node.js native addon for Discord Social SDK",
+  "main": "index.js",
+  "gypfile": true,
+  "scripts": {
+    "install": "node-gyp configure && node fix-toolset.js && node-gyp build",
+    "build": "node-gyp configure && node fix-toolset.js && node-gyp build",
+    "clean": "node-gyp clean",
+    "configure": "node-gyp configure && node fix-toolset.js",
+    "rebuild": "node-gyp clean && node-gyp configure && node fix-toolset.js && node-gyp build"
+  },
+  "keywords": [
+    "discord",
+    "social-sdk",
+    "native-addon"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "node-addon-api": "^7.1.0",
+    "node-gyp": "^9.4.0"
+  },
+  "dependencies": {}
+}

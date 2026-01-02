@@ -1,0 +1,310 @@
+<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Ultra vibrant gradients -->
+    <radialGradient id="portalCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#EC4899;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#C026D3;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
+    </radialGradient>
+    
+    <radialGradient id="innerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#F0ABFC;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#A78BFA;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#6366F1;stop-opacity:0.4" />
+    </radialGradient>
+
+    <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF0080;stop-opacity:1">
+        <animate attributeName="stop-color" values="#FF0080;#FF8000;#FFFF00;#00FF00;#0080FF;#8000FF;#FF0080" dur="6s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" style="stop-color:#00F0FF;stop-opacity:1">
+        <animate attributeName="stop-color" values="#00F0FF;#FF0080;#FF8000;#FFFF00;#00FF00;#0080FF;#00F0FF" dur="6s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#8000FF;stop-opacity:1">
+        <animate attributeName="stop-color" values="#8000FF;#FF0080;#FF8000;#FFFF00;#00FF00;#0080FF;#8000FF" dur="6s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+
+    <linearGradient id="electricPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0ABFC;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#A78BFA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="cyberBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#67E8F9;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E3A8A;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Extreme glow filters -->
+    <filter id="ultraGlow">
+      <feGaussianBlur stdDeviation="15" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="plasmaGlow">
+      <feGaussianBlur stdDeviation="8" result="blur1"/>
+      <feGaussianBlur stdDeviation="20" result="blur2"/>
+      <feGaussianBlur stdDeviation="35" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="chromaticGlow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feColorMatrix in="coloredBlur" type="matrix" values="1.5 0 0 0 0  0 1.2 0 0 0  0 0 1.8 0 0  0 0 0 1 0"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="neonBurst">
+      <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Deep space background -->
+  <rect width="1000" height="1000" fill="#000000"/>
+  
+  <!-- Animated background gradient -->
+  <rect width="1000" height="1000" fill="url(#portalCore)" opacity="0.08">
+    <animate attributeName="opacity" values="0.05;0.12;0.05" dur="4s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Distant stars/particles -->
+  <g opacity="0.6">
+    <circle cx="120" cy="180" r="2" fill="#A78BFA">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="850" cy="220" r="2" fill="#60A5FA">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="200" cy="750" r="2" fill="#34D399">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="780" cy="820" r="2" fill="#F0ABFC">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="450" cy="150" r="1.5" fill="#FCD34D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="650" cy="900" r="1.5" fill="#EC4899">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Outer energy rings (massive) -->
+  <g transform="translate(500, 500)">
+    <!-- Ring 6 - Outermost -->
+    <circle cx="0" cy="0" r="380" fill="none" stroke="url(#rainbow)" stroke-width="2" opacity="0.3" stroke-dasharray="20 10">
+      <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="40s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Ring 5 -->
+    <circle cx="0" cy="0" r="320" fill="none" stroke="url(#electricPurple)" stroke-width="3" opacity="0.4" filter="url(#chromaticGlow)">
+      <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="35s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="320;330;320" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Ring 4 -->
+    <circle cx="0" cy="0" r="260" fill="none" stroke="url(#cyberBlue)" stroke-width="4" opacity="0.5" filter="url(#neonBurst)">
+      <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="30s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Geometric orbital paths -->
+    <g opacity="0.6">
+      <polygon points="0,-240 120,-120 120,120 0,240 -120,120 -120,-120" fill="none" stroke="url(#rainbow)" stroke-width="2" stroke-dasharray="15 5">
+        <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="25s" repeatCount="indefinite"/>
+      </polygon>
+      <polygon points="0,-200 100,-100 100,100 0,200 -100,100 -100,-100" fill="none" stroke="url(#electricPurple)" stroke-width="2" stroke-dasharray="10 5">
+        <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="22s" repeatCount="indefinite"/>
+      </polygon>
+    </g>
+
+    <!-- Ring 3 - Bright energy -->
+    <circle cx="0" cy="0" r="200" fill="none" stroke="url(#rainbow)" stroke-width="6" opacity="0.7" filter="url(#plasmaGlow)">
+      <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="-360 0 0" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="200;210;200" dur="3s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Pulsing energy waves -->
+    <circle cx="0" cy="0" r="180" fill="none" stroke="#A78BFA" stroke-width="3" opacity="0">
+      <animate attributeName="r" values="180;280;380" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.3;0" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-width" values="3;1;0" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="0" cy="0" r="180" fill="none" stroke="#06B6D4" stroke-width="3" opacity="0">
+      <animate attributeName="r" values="180;280;380" dur="4s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.3;0" dur="4s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-width" values="3;1;0" dur="4s" begin="2s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Ring 2 - Intense middle layer -->
+    <circle cx="0" cy="0" r="150" fill="none" stroke="url(#electricPurple)" stroke-width="8" opacity="0.8" filter="url(#ultraGlow)">
+      <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="15s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Data stream particles on ring -->
+    <g filter="url(#plasmaGlow)">
+      <circle cx="0" cy="-150" r="8" fill="#F0ABFC">
+        <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="5s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="8;12;8" dur="1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="-150" r="8" fill="#06B6D4">
+        <animateTransform attributeName="transform" type="rotate" from="180 0 0" to="540 0 0" dur="5s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="8;12;8" dur="1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="-150" r="8" fill="#34D399">
+        <animateTransform attributeName="transform" type="rotate" from="90 0 0" to="450 0 0" dur="5s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="8;12;8" dur="1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="-150" r="8" fill="#FBBF24">
+        <animateTransform attributeName="transform" type="rotate" from="270 0 0" to="630 0 0" dur="5s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="8;12;8" dur="1s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Ring 1 - Inner sanctum -->
+    <circle cx="0" cy="0" r="110" fill="none" stroke="url(#cyberBlue)" stroke-width="10" opacity="0.9" filter="url(#plasmaGlow)">
+      <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="10s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="110;115;110" dur="2s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- PORTAL CORE - The main attraction -->
+    <circle cx="0" cy="0" r="100" fill="url(#innerGlow)" filter="url(#ultraGlow)" opacity="0.6">
+      <animate attributeName="r" values="100;105;100" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="0" cy="0" r="95" fill="url(#portalCore)" filter="url(#plasmaGlow)">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Holographic scan lines -->
+    <g opacity="0.7">
+      <rect x="-100" y="-50" width="200" height="3" fill="#06B6D4" filter="url(#neonBurst)">
+        <animate attributeName="y" values="-100;100;-100" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.9;0" dur="3s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="-100" y="0" width="200" height="2" fill="#F0ABFC" filter="url(#neonBurst)">
+        <animate attributeName="y" values="-100;100;-100" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.8;0" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="-100" y="50" width="200" height="2" fill="#34D399" filter="url(#neonBurst)">
+        <animate attributeName="y" values="-100;100;-100" dur="3.2s" begin="1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.7;0" dur="3.2s" begin="1s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+
+    <!-- Chromatic aberration code symbol -->
+    <g>
+      <!-- Red channel -->
+      <text x="-4" y="15" font-family="monospace" font-size="80" fill="#FF0080" text-anchor="middle" font-weight="bold" opacity="0.6">
+        &lt;/&gt;
+      </text>
+      <!-- Cyan channel -->
+      <text x="4" y="15" font-family="monospace" font-size="80" fill="#00F0FF" text-anchor="middle" font-weight="bold" opacity="0.6">
+        &lt;/&gt;
+      </text>
+      <!-- White core -->
+      <text x="0" y="15" font-family="monospace" font-size="80" fill="white" text-anchor="middle" font-weight="bold" filter="url(#ultraGlow)">
+        &lt;/&gt;
+      </text>
+    </g>
+
+    <!-- Energy sparks flying out -->
+    <g filter="url(#plasmaGlow)">
+      <!-- Spark 1 -->
+      <circle cx="0" cy="0" r="5" fill="#EC4899">
+        <animateTransform attributeName="transform" type="translate" values="0,0;-150,-150;0,0" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Spark 2 -->
+      <circle cx="0" cy="0" r="5" fill="#8B5CF6">
+        <animateTransform attributeName="transform" type="translate" values="0,0;150,-150;0,0" dur="2.8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="2.8s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Spark 3 -->
+      <circle cx="0" cy="0" r="5" fill="#06B6D4">
+        <animateTransform attributeName="transform" type="translate" values="0,0;-150,150;0,0" dur="3.2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="3.2s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Spark 4 -->
+      <circle cx="0" cy="0" r="5" fill="#10B981">
+        <animateTransform attributeName="transform" type="translate" values="0,0;150,150;0,0" dur="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Spark 5 -->
+      <circle cx="0" cy="0" r="5" fill="#FBBF24">
+        <animateTransform attributeName="transform" type="translate" values="0,0;0,-180;0,0" dur="2.7s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="2.7s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Spark 6 -->
+      <circle cx="0" cy="0" r="5" fill="#F472B6">
+        <animateTransform attributeName="transform" type="translate" values="0,0;0,180;0,0" dur="3.1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="3.1s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Orbiting energy cores -->
+    <g filter="url(#ultraGlow)">
+      <circle cx="0" cy="-130" r="12" fill="#F0ABFC">
+        <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="6s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="10;15;10" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="-130" r="12" fill="#06B6D4">
+        <animateTransform attributeName="transform" type="rotate" from="120 0 0" to="480 0 0" dur="6s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="10;15;10" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="-130" r="12" fill="#34D399">
+        <animateTransform attributeName="transform" type="rotate" from="240 0 0" to="600 0 0" dur="6s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="10;15;10" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Rotating hexagon frame -->
+    <polygon points="0,-85 75,-43 75,43 0,85 -75,43 -75,-43" fill="none" stroke="url(#rainbow)" stroke-width="3" opacity="0.5" filter="url(#chromaticGlow)">
+      <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="12s" repeatCount="indefinite"/>
+    </polygon>
+
+    <!-- Glitch lines -->
+    <g opacity="0.4">
+      <line x1="-90" y1="-20" x2="90" y2="-20" stroke="#06B6D4" stroke-width="1">
+        <animate attributeName="opacity" values="0;1;0;1;0" dur="0.3s" repeatCount="indefinite"/>
+      </line>
+      <line x1="-90" y1="30" x2="90" y2="30" stroke="#F0ABFC" stroke-width="1">
+        <animate attributeName="opacity" values="0;1;0;1;0" dur="0.4s" begin="0.1s" repeatCount="indefinite"/>
+      </line>
+    </g>
+  </g>
+
+  <!-- Corner accent details -->
+  <g opacity="0.3" filter="url(#neonBurst)">
+    <circle cx="80" cy="80" r="30" fill="none" stroke="url(#electricPurple)" stroke-width="2"/>
+    <circle cx="920" cy="80" r="30" fill="none" stroke="url(#cyberBlue)" stroke-width="2"/>
+    <circle cx="80" cy="920" r="30" fill="none" stroke="url(#cyberBlue)" stroke-width="2"/>
+    <circle cx="920" cy="920" r="30" fill="none" stroke="url(#electricPurple)" stroke-width="2"/>
+  </g>
+</svg>
