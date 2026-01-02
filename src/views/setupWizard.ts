@@ -378,6 +378,9 @@ export class SetupWizard {
     }
 
     private getWizardHTML(): string {
+        const logoUri = this.panel?.webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, 'media', 'logo.svg')
+        );
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -781,7 +784,7 @@ export class SetupWizard {
     <canvas id="matrix-rain"></canvas>
     <div class="container">
         <div class="header">
-            <div class="logo">🎮</div>
+            <img src="${logoUri}" alt="Logo" class="logo-img" style="width: 60px; height: 60px; margin-bottom: 20px;" />
             <h1>Discord Lobbies SDK</h1>
             <div class="subtitle">Extension Setup Wizard</div>
         </div>

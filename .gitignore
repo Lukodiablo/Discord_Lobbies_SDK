@@ -32,6 +32,13 @@ Thumbs.db
 .env
 .env.local
 
+# Package / install artifacts
+package-lock.json
+.eslintcache
+
+# Packaged extension
+*.vsix
+
 # Logs
 *.log
 logs/

@@ -67,6 +67,9 @@ export class QuickAccessPanel {
     }
 
     private getHTML(): string {
+        const logoUri = this.panel?.webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, 'media', 'logo.svg')
+        );
         const commands = [
             { id: 'discord-vscode.authenticate', label: '🔐 Authenticate', desc: 'Login to Discord' },
             { id: 'discord-vscode.createLobby', label: '🏠 Create Lobby', desc: 'Start a new lobby' },
@@ -288,9 +291,8 @@ export class QuickAccessPanel {
     <canvas id="matrix-rain"></canvas>
     <div class="container">
         <div class="header">
-            <h1>🎮 Discord Lobbies SDK</h1>
-            <p>Extension Quick Access</p>
-        </div>
+            <img src="${logoUri}" alt="Logo" style="width: 50px; height: 50px; margin-right: 15px; vertical-align: middle;" />
+            <h1 style="display: inline-block; margin: 0;">Discord Lobbies SDK</h1>
 
         <div class="commands-grid">
             ${commandButtons}
