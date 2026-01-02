@@ -704,7 +704,7 @@ export async function activate(context: vscode.ExtensionContext) {
           const context = getContext();
           const currentLobby = context?.workspaceState.get('currentLobby') as any;
           
-          let messages = [];
+          let messages: any[] = [];
           let messageSource = 'unknown';
           
           // First, get the message details by ID to know its context

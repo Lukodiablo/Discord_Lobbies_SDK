@@ -13,6 +13,7 @@ rust-native/target/
 # Discord SDK (large binaries - download separately)
 DiscordSocialSdk-*/
 discord-sdk/
+discord_social_sdk/
 
 # Native addon build artifacts
 native/build/
