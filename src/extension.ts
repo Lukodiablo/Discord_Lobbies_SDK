@@ -1120,20 +1120,21 @@ export async function activate(context: vscode.ExtensionContext) {
           setTimeout(() => decorationProvider.setDiscordClient(discordClient!), 400);
           setTimeout(() => quickAccessCommands.setDiscordClient(discordClient!), 500);
           setTimeout(() => chatViewProviderText.setDiscordClient(discordClient!), 600);
-        }
-        console.log('✅ Discord client set on all providers');
-        
-        // CRITICAL: Refresh tree providers after successful connection to populate UI
-        console.log('🔄 Refreshing tree providers to display Discord data...');
-        try {
-          serverTreeProvider?.refresh();
-          lobbiesTreeProvider?.refresh();
-          lobbyChatTreeProvider?.refresh();
-          directMessagesTreeProvider?.refresh();
-          richPresenceTreeProvider?.refresh();
-          console.log('✅ Tree providers refreshed');
-        } catch (refreshErr) {
-          console.warn('⚠️ Error refreshing tree providers:', refreshErr);
+          
+          // Refresh tree providers AFTER all clients are set (700ms to be safe)
+          setTimeout(() => {
+            console.log('🔄 Refreshing tree providers to display Discord data...');
+            try {
+              serverTreeProvider?.refresh();
+              lobbiesTreeProvider?.refresh();
+              lobbyChatTreeProvider?.refresh();
+              directMessagesTreeProvider?.refresh();
+              richPresenceTreeProvider?.refresh();
+              console.log('✅ Tree providers refreshed');
+            } catch (refreshErr) {
+              console.warn('⚠️ Error refreshing tree providers:', refreshErr);
+            }
+          }, 700);
         }
         
         // After successful connection, if wizard was waiting for auth, reopen it
