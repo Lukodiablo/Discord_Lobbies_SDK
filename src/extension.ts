@@ -221,7 +221,8 @@ async function sendDMToFriendDirect(friendId: string, friendName: string, messag
       // Also relay via API so receiving device gets it
       try {
         const { relayMessage } = await import('./services/relayAPI');
-        const currentUser = (vscode.extensions.getExtension('Lukodiablo0986.lobbies-sdk') as any)?.exports?.getCurrentUser?.() || {};
+        const extId = extensionContext?.extension?.id || 'unknown';
+        const currentUser = (vscode.extensions.getExtension(extId) as any)?.exports?.getCurrentUser?.() || {};
         const userId = currentUser.id || 'unknown';
         
         await relayMessage(friendId, {

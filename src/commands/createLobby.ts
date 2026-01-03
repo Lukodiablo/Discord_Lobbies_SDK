@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { getDiscordClient, getContext } from '../extension';
 import { sdkAdapter } from '../services/discordSDKSubprocess';
+import { registerLobby } from '../services/relayAPI';
+import { updateRelayPollerLobbies } from '../services/relayMessagePoller';
 
 export async function createLobbyCommand() {
     const client = getDiscordClient();
@@ -53,6 +55,19 @@ export async function createLobbyCommand() {
                 title,
                 description
             });
+            
+            // Register lobby with relay API so we receive messages
+            const extensionId = vscode.extensions.getExtension('lobbies-sdk')?.id || 'unknown';
+            try {
+                await registerLobby(lobbyId, extensionId);
+                console.log(`[CreateLobby] Registered lobby ${lobbyId} with relay API`);
+                
+                // Tell relay poller to monitor this lobby
+                updateRelayPollerLobbies([lobbyId]);
+                console.log(`[CreateLobby] Added lobby ${lobbyId} to relay poller`);
+            } catch (registerError) {
+                console.warn('[CreateLobby] Failed to register lobby with relay API:', registerError);
+            }
             
             // Trigger tree view refresh via view state change
             vscode.commands.executeCommand('discord-vscode.refreshLobbies');

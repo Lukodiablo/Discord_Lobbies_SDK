@@ -102,7 +102,7 @@ export async function sendLobbyMessageCommand() {
             await sdkAdapter.sendLobbyMessage(lobbyId, message);
             
             // Register lobby with relay API before sending (ensures lobby is tracked)
-            const extensionId = vscode.extensions.getExtension('Lukodiablo0986.lobbies-sdk')?.id || 'unknown';
+            const extensionId = vscode.extensions.getExtension('lobbies-sdk')?.id || 'unknown';
             try {
                 await registerLobby(lobbyId, extensionId);
                 console.log('[sendLobbyMessage] Lobby registered with relay API');

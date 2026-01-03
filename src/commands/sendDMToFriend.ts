@@ -24,7 +24,7 @@ export async function sendDMToFriendCommand(friendId: string, friendName: string
             title: `Sending message to ${friendName}...`,
             cancellable: false
         }, async () => {
-            const currentUser = (vscode.extensions.getExtension('Lukodiablo0986.lobbies-sdk') as any)?.exports?.getCurrentUser?.() || {};
+            const currentUser = (vscode.extensions.getExtension('lobbies-sdk') as any)?.exports?.getCurrentUser?.() || {};
             const userId = currentUser.id || 'unknown';
             
             // Send via SDK to Discord

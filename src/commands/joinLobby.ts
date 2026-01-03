@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { getDiscordClient, getContext } from '../extension';
 import { registerLobby } from '../services/relayAPI';
+import { updateRelayPollerLobbies } from '../services/relayMessagePoller';
 
 export async function joinLobbyCommand() {
     const client = getDiscordClient();
@@ -105,10 +106,14 @@ export async function joinLobbyCommand() {
                 });
                 
                 // Register lobby with relay API so we receive messages
-                const extensionId = vscode.extensions.getExtension('discord-vscode')?.id || 'unknown';
+                const extensionId = vscode.extensions.getExtension('lobbies-sdk')?.id || 'unknown';
                 try {
                     await registerLobby(lobbyId, extensionId);
                     console.log(`[JoinLobby] Registered lobby ${lobbyId} with relay API`);
+                    
+                    // Tell relay poller to monitor this lobby
+                    updateRelayPollerLobbies([lobbyId]);
+                    console.log(`[JoinLobby] Added lobby ${lobbyId} to relay poller`);
                 } catch (registerError) {
                     console.warn('[JoinLobby] Failed to register lobby with relay API:', registerError);
                 }
