@@ -36,9 +36,6 @@ Thumbs.db
 package-lock.json
 .eslintcache
 
-# Packaged extension
-*.vsix
-
 # Logs
 *.log
 logs/
