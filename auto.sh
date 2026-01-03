@@ -152,6 +152,10 @@ echo ""
 echo "📦 Building Native C++ bindings (native/)..."
 cd native
 
+# Install native dependencies first (node-addon-api)
+echo "📥 Installing native dependencies..."
+npm install
+
 if [ "$IS_WINDOWS" = true ]; then
     echo "🪟 Windows detected: Using node-gyp..."
     # Clean old build

@@ -832,10 +832,16 @@ export async function activate(context: vscode.ExtensionContext) {
             // Resolve author username
             let authorName = authorId;
             try {
-              authorName = await sdkAdapter.resolveUsername(authorId);
+              const resolved = await sdkAdapter.resolveUsername(authorId);
+              if (resolved && resolved.trim()) {
+                authorName = resolved;
+              }
             } catch (err) {
-              console.warn('[Extension] Failed to resolve username, using ID:', err);
+              console.warn('[Extension] Failed to resolve username for', authorId, '- using ID as fallback');
             }
+            
+            // Ensure authorName is never empty - fallback to authorId if needed
+            const displayName = (authorName && authorName !== authorId) ? authorName : authorId;
             
             console.log(`[Extension] 💬 Received ${messageSource} message from ${authorName} (${authorId}): ${content.substring(0, 100)}`);
             
@@ -865,27 +871,28 @@ export async function activate(context: vscode.ExtensionContext) {
                   msgId.toString() // messageId for deduplication
                 );
               } else if (messageSource === 'dm') {
-                // For DMs, just show notification (DM panel not yet implemented)
-                // In the future, route to DM panel here
-                console.log(`[Extension] DM from ${authorName} - DM panel not yet implemented`);
+                // For DMs, show notification (DM panel not yet implemented)
+                // Notification will be shown below
+                console.log(`[Extension] 💬 Showing notification for DM from ${displayName}`);
               }
               
               // Show notification with actual message content and username
+              console.log(`[Extension] About to show notification for: ${displayName}`);
               vscode.window.showInformationMessage(
-                `💬 Message from ${authorName}: ${content.substring(0, 80)}${content.length > 80 ? '...' : ''}`,
+                `💬 Message from ${displayName}: ${content.substring(0, 80)}${content.length > 80 ? '...' : ''}`,
                 'View', 'Reply'
               ).then(selection => {
                 if (selection === 'View') {
                   // Show full message details
                   vscode.window.showInformationMessage(
-                    `📨 From: ${authorName}\n\n${content}`,
+                    `📨 From: ${displayName}\n\n${content}`,
                     'OK'
                   );
                 } else if (selection === 'Reply') {
                   // Open reply dialog
                   vscode.window.showInputBox({
                     placeHolder: 'Type your reply...',
-                    title: `Reply to ${authorName}`
+                    title: `Reply to ${displayName}`
                   }).then(reply => {
                     if (reply) {
                       // Send reply via sendDMToFriend
