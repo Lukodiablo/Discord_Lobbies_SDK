@@ -176,17 +176,18 @@ export async function relayMessage(
  * Register extension for a specific lobby
  */
 export async function registerLobby(lobbyId: string, extensionId: string): Promise<any> {
-  console.log(`[RelayAPI] Registering for lobby ${lobbyId}`);
+  console.log(`[RelayAPI] Registering extension ${extensionId} for lobby ${lobbyId}`);
   
   return new Promise((resolve, reject) => {
-    const url = new URL(`${RELAY_API_URL}/register/${lobbyId}/${extensionId}`);
+    // Use query parameter to pass lobbyId - avoids Express routing conflict
+    const url = new URL(`${RELAY_API_URL}/register/${extensionId}?lobbyId=${lobbyId}`);
     const isHttps = url.protocol === 'https:';
     const client = isHttps ? https : http;
 
     const options = {
       hostname: url.hostname,
       port: url.port,
-      path: url.pathname,
+      path: url.pathname + url.search,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -224,17 +225,18 @@ export async function registerLobby(lobbyId: string, extensionId: string): Promi
  * Unregister extension from a specific lobby
  */
 export async function unregisterLobby(lobbyId: string, extensionId: string): Promise<any> {
-  console.log(`[RelayAPI] Unregistering from lobby ${lobbyId}`);
+  console.log(`[RelayAPI] Unregistering extension ${extensionId} from lobby ${lobbyId}`);
   
   return new Promise((resolve, reject) => {
-    const url = new URL(`${RELAY_API_URL}/unregister/${lobbyId}/${extensionId}`);
+    // Use query parameter to pass lobbyId
+    const url = new URL(`${RELAY_API_URL}/unregister/${extensionId}?lobbyId=${lobbyId}`);
     const isHttps = url.protocol === 'https:';
     const client = isHttps ? https : http;
 
     const options = {
       hostname: url.hostname,
       port: url.port,
-      path: url.pathname,
+      path: url.pathname + url.search,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
