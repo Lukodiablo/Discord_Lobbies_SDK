@@ -6,7 +6,7 @@ import * as http from 'http';
  * Handles real-time message relay between extensions
  */
 
-const RELAY_API_URL = process.env.RELAY_API_URL || 'https://messages-l5kpjcmhp-lukas-projects-2b680f8b.vercel.app';
+const RELAY_API_URL = process.env.RELAY_API_URL || 'https://messages-blue.vercel.app';
 
 interface RelayMessage {
   from: string;
@@ -27,6 +27,7 @@ interface RelayResponse {
  */
 export async function registerExtension(extensionId: string): Promise<RelayResponse> {
   console.log(`[RelayAPI] Registering extension: ${extensionId}`);
+  console.log(`[RelayAPI] URL: ${RELAY_API_URL}/register/${extensionId}`);
   
   return new Promise((resolve, reject) => {
     const url = new URL(`${RELAY_API_URL}/register/${extensionId}`);
@@ -53,6 +54,8 @@ export async function registerExtension(extensionId: string): Promise<RelayRespo
       });
 
       res.on('end', () => {
+        console.log(`[RelayAPI] Response status: ${res.statusCode}`);
+        console.log(`[RelayAPI] Response body: ${data}`);
         if (res.statusCode && res.statusCode >= 400) {
           reject(new Error(`Register failed ${res.statusCode}: ${data}`));
         } else {
@@ -126,6 +129,7 @@ export async function relayMessage(
   message: RelayMessage
 ): Promise<RelayResponse> {
   console.log(`[RelayAPI] Relaying message to lobby: ${lobbyId}`, message);
+  console.log(`[RelayAPI] URL: ${RELAY_API_URL}/relay/${lobbyId}`);
   
   const payload = JSON.stringify(message);
   
@@ -154,6 +158,8 @@ export async function relayMessage(
       });
 
       res.on('end', () => {
+        console.log(`[RelayAPI] Response status: ${res.statusCode}`);
+        console.log(`[RelayAPI] Response body: ${data}`);
         if (res.statusCode && res.statusCode >= 400) {
           reject(new Error(`Relay failed ${res.statusCode}: ${data}`));
         } else {
