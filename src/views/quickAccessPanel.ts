@@ -69,7 +69,7 @@ export class QuickAccessPanel {
     private getHTML(): string {
         const logoUri = this.panel?.webview.asWebviewUri(
             vscode.Uri.joinPath(this.context.extensionUri, 'media', 'logo.svg')
-        );
+        ).toString();
         const commands = [
             { id: 'discord-vscode.authenticate', label: '🔐 Authenticate', desc: 'Login to Discord' },
             { id: 'discord-vscode.createLobby', label: '🏠 Create Lobby', desc: 'Start a new lobby' },
@@ -151,6 +151,29 @@ export class QuickAccessPanel {
             text-align: center;
             margin-bottom: 50px;
             animation: slideDown 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background: transparent;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            position: relative;
+            animation: portalFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes portalFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
 
         .header h1 {
@@ -161,9 +184,9 @@ export class QuickAccessPanel {
             letter-spacing: 2px;
         }
 
-        .header p {
-            font-size: 1.1em;
+        .subtitle {
             color: #00ff00;
+            font-size: 1.1em;
             opacity: 0.8;
             text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
         }
@@ -291,8 +314,10 @@ export class QuickAccessPanel {
     <canvas id="matrix-rain"></canvas>
     <div class="container">
         <div class="header">
-            <img src="${logoUri}" alt="Logo" style="width: 50px; height: 50px; margin-right: 15px; vertical-align: middle;" />
-            <h1 style="display: inline-block; margin: 0;">Discord Lobbies SDK</h1>
+            <img src="${logoUri}" alt="Logo" class="logo" />
+            <h1>Discord Lobbies SDK</h1>
+            <div class="subtitle">Extension Quick Access</div>
+        </div>
 
         <div class="commands-grid">
             ${commandButtons}
@@ -347,7 +372,7 @@ export class QuickAccessPanel {
                         if (drop.y > canvas.height) {
                             drop.y = -20;
                             drop.x = Math.random() * canvas.width;
-                            drop.char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                            drop.char = matrixChars[Math.floor(Math.random() * matrixChars.length)]
                         }
                     });
                     

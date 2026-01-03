@@ -42,6 +42,8 @@ import { ChatViewProvider as ChatViewProviderText } from './views/chatViewProvid
 import { SharedCodeProvider } from './views/sharedCodeProvider';
 import { RichPresenceTreeProvider } from './views/richPresenceTreeProvider';
 import { startMessagePoller, stopMessagePoller } from './services/lobbyMessagePoller';
+import { startDMPoller, stopDMPoller, updateDMPollerFriends } from './services/dmMessagePoller';
+import { startRelayPoller, stopRelayPoller, updateRelayPollerLobbies } from './services/relayMessagePoller';
 import { registerExtension, healthCheck } from './services/relayAPI';
 
 import { DiscordSDKAdapter, sdkAdapter } from './services/discordSDKSubprocess';
@@ -200,6 +202,43 @@ function handleCodeShareInMessage(
   });
 
   return true;
+}
+
+/**
+ * Helper function to send a DM directly without user prompt
+ * Used by reply handler and programmatic calls
+ */
+async function sendDMToFriendDirect(friendId: string, friendName: string, message: string) {
+  try {
+    await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: `Sending message to ${friendName}...`,
+      cancellable: false
+    }, async () => {
+      // Send via SDK to Discord
+      await sdkAdapterInstance.sendDM(friendId, message);
+      
+      // Also relay via API so receiving device gets it
+      try {
+        const { relayMessage } = await import('./services/relayAPI');
+        const currentUser = (vscode.extensions.getExtension('Lukodiablo0986.lobbies-sdk') as any)?.exports?.getCurrentUser?.() || {};
+        const userId = currentUser.id || 'unknown';
+        
+        await relayMessage(friendId, {
+          from: userId,
+          content: message,
+          timestamp: Date.now()
+        });
+        console.log('[sendDMToFriend] DM relayed via API');
+      } catch (relayError) {
+        console.warn('[sendDMToFriend] Relay failed (non-critical):', relayError);
+      }
+      
+      vscode.window.showInformationMessage(`Message sent to ${friendName}!`);
+    });
+  } catch (error) {
+    vscode.window.showErrorMessage(`Failed to send message: ${error}`);
+  }
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -621,12 +660,32 @@ export async function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-      vscode.commands.registerCommand('discord-vscode.sendDMToFriend', (item: any) => {
-        // Extract from tree item
-        const friendId = item.id;
-        const friendName = item.label.replace('👤 ', '');
+      vscode.commands.registerCommand('discord-vscode.sendDMToFriend', (item: any, messageText?: string) => {
+        // Handle both tree item context AND programmatic calls
+        let friendId: string;
+        let friendName: string;
+        let message: string | undefined;
+
+        if (typeof item === 'string') {
+          // Called programmatically: (friendId, messageText)
+          friendId = item;
+          message = messageText;
+          friendName = 'Friend'; // Will be fetched
+        } else {
+          // Called from tree: (treeItem, ...)
+          friendId = item.id;
+          friendName = item.label?.replace('👤 ', '') || 'Friend';
+        }
+
         console.log('[sendDMToFriend command] Friend ID:', friendId, 'Name:', friendName);
-        sendDMToFriendCommand(friendId, friendName);
+        
+        if (message) {
+          // Direct send with provided message (from reply)
+          sendDMToFriendDirect(friendId, friendName, message);
+        } else {
+          // Interactive send (from tree item)
+          sendDMToFriendCommand(friendId, friendName);
+        }
       })
     );
 
@@ -953,6 +1012,45 @@ export async function activate(context: vscode.ExtensionContext) {
         console.log(`🔌 Connecting with: SDK authorization flow`);
       }
       
+      // CRITICAL: Register onReady callback BEFORE connecting
+      // This ensures it catches the ready event emitted in connect()
+      const initializePollers = async () => {
+        console.log('✅ Discord Client READY!');
+        const guilds = discordClient!.getGuilds();
+        console.log(`📊 Discord Client loaded ${guilds.length} guilds`);
+        
+        // Start real-time message event poller
+        startMessagePoller();
+        console.log('🔔 Real-time message listener started');
+        
+        // Start relay poller for cross-device messages
+        startRelayPoller();
+        console.log('📡 Relay message listener started');
+        
+        // Fetch friends list for tree providers
+        try {
+          const friends = await discordClient!.fetchFriends();
+          if (friends && friends.length > 0) {
+            const friendIds = friends.map((f: any) => f.id);
+            // DM polling disabled - all DM delivery via RelayAPI
+          }
+        } catch (err) {
+          console.warn('Failed to fetch friends:', err);
+        }
+        
+        // Initialize relay API
+        try {
+          const health = await healthCheck();
+          console.log(`🔗 Relay API online: ${health.status}`);
+          const extensionId = context.extension.id;
+          await registerExtension(extensionId);
+          console.log(`✓ Extension registered with relay API (${extensionId})`);
+        } catch (relayError) {
+          console.warn('⚠️  Relay API unavailable (non-critical):', relayError);
+        }
+      };
+      discordClient.onReady(initializePollers);
+
       // CRITICAL: Register token-received handler BEFORE connecting
       // This ensures it catches tokens from the auth flow
       sdkAdapterInstance.on('token-received', async (tokenData: any) => {
@@ -1082,26 +1180,7 @@ export async function activate(context: vscode.ExtensionContext) {
         // Handler already registered above before connecting
         
         if (discordClient) {
-          discordClient.onReady(async (data: any) => {
-            console.log('✅ Discord Client READY!');
-            const guilds = discordClient!.getGuilds();
-            console.log(`📊 Discord Client loaded ${guilds.length} guilds`);
-            
-            // Start real-time message event poller
-            startMessagePoller();
-            console.log('🔔 Real-time message listener started');
-            
-            // Initialize relay API
-            try {
-              const health = await healthCheck();
-              console.log(`🔗 Relay API online: ${health.status}`);
-              const extensionId = context.extension.id;
-              await registerExtension(extensionId);
-              console.log(`✓ Extension registered with relay API (${extensionId})`);
-            } catch (relayError) {
-              console.warn('⚠️  Relay API unavailable (non-critical):', relayError);
-            }
-          });
+          // Note: initializePollers already registered in onReady callback above
           
           discordClient.onMessage((message: any) => {
             const authorName = message.author?.username || message.author_username || message.author_id || 'Unknown';
@@ -1119,21 +1198,9 @@ export async function activate(context: vscode.ExtensionContext) {
           discordClient.onError((error: Error) => {
             console.error('❌ Discord Client error:', error);
             stopMessagePoller();
+            stopDMPoller();
+            stopRelayPoller();
           });
-          
-          try {
-            // Connect with timeout - don't wait forever
-            const connectPromise = discordClient.connect();
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Connection timeout')), 30000)
-            );
-            await Promise.race([connectPromise, timeoutPromise]);
-            console.log('✓ Extension activated - Discord SDK connected');
-          } catch (connectError) {
-            console.warn('⚠️  Discord SDK connection failed:', connectError);
-            console.warn('    You can still use basic features with the stored OAuth token.');
-            console.warn('    For full features, please launch Discord desktop app and reconnect.');
-          }
         } else {
           console.log('⚠️ User not authenticated. Run "Discord: Authenticate" command to start using Discord features.');
           vscode.window.showWarningMessage(

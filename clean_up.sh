@@ -2,11 +2,11 @@
 
 # Clean up script for Discord Lobbies SDK
 # Removes all build artifacts, caches, and post-install dependencies
-# Keeps the codebase in a clean state
+# IMPORTANT: Keeps native/node_modules since it's required for the build
 
 echo "🧹 Cleaning up Discord VS Code Extension..."
 
-# Remove npm artifacts
+# Remove npm artifacts (root only - NOT native/node_modules!)
 echo "🗑️  Removing npm artifacts..."
 rm -rf node_modules/
 rm -f package-lock.json
@@ -21,7 +21,7 @@ echo "🗑️  Removing Rust build artifacts..."
 rm -rf rust-native/target/
 rm -f rust-native/Cargo.lock
 
-# Remove native C++ build artifacts
+# Remove native C++ build artifacts ONLY (NOT node_modules - those are needed for build!)
 echo "🗑️  Removing native C++ build artifacts..."
 rm -rf native/build/
 rm -rf native/.node-gyp/
@@ -32,9 +32,6 @@ rm -f .eslintcache
 rm -f .DS_Store
 rm -rf **/.DS_Store
 
-# Remove any VSIX files (optional - comment out if you want to keep them)
-# rm -f *.vsix
-
 echo "✅ Cleanup complete!"
 echo ""
 echo "📋 Summary:"
@@ -44,6 +41,7 @@ echo "  ✓ Build outputs removed (dist/)"
 echo "  ✓ Rust artifacts removed (rust-native/target/)"
 echo "  ✓ Native bindings removed (native/build/)"
 echo "  ✓ Cache files removed"
+echo "  ✓ native/node_modules PRESERVED (needed for ./auto.sh)"
 echo ""
 echo "💡 To rebuild, run:"
 echo "  ./auto.sh"

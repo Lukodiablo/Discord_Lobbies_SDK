@@ -310,23 +310,12 @@ export class DiscordSubprocess extends EventEmitter {
                 // Handle stdout (responses from Rust)
                 this.process.stdout!.on('data', (data: Buffer) => {
                     const lines = data.toString().split('\n').filter(l => l.trim());
-                    if (lines.some(l => !l.includes('messages'))) {
-                        console.log(`[DiscordSubprocess] Received ${lines.length} lines from stdout`);
-                    }
+                    // Silently process without logging (too verbose)
                     for (const line of lines) {
                         try {
-                            if (!line.includes('messages')) {
-                                console.log(`[DiscordSubprocess] Parsing line: ${line.substring(0, 100)}...`);
-                            }
                             const resp = JSON.parse(line) as DiscordResponse;
-                            if (!line.includes('messages')) {
-                                console.log(`[DiscordSubprocess] Parsed response for id=${resp.id}, success=${resp.success}`);
-                            }
                             const callback = this.pendingRequests.get(resp.id);
                             if (callback) {
-                                if (!line.includes('messages')) {
-                                    console.log(`[DiscordSubprocess] Calling callback for id=${resp.id}`);
-                                }
                                 this.pendingRequests.delete(resp.id);
                                 callback(resp);
                             } else {
@@ -341,8 +330,23 @@ export class DiscordSubprocess extends EventEmitter {
                 // Handle stderr - capture all output for debugging
                 this.process.stderr!.on('data', (data: Buffer) => {
                     const msg = data.toString();
-                    console.error('[DiscordSubprocess] stderr:', msg);
                     startupError += msg; // Capture all stderr for error reporting
+                    
+                    // Filter out spam from polling commands (get_user_messages, get_message_events)
+                    const pollingSpamPatterns = [
+                        /Processing command: (get_user_messages|get_message_events)/,
+                        /Getting user messages:/,
+                        /GetUserMessages callback FIRED/,
+                        /No messages in response/,
+                        /Fetched \d+ messages/,
+                        /Sending response:.*bytes/
+                    ];
+                    const isPollingSpam = pollingSpamPatterns.some(pattern => pattern.test(msg));
+                    
+                    // Only log non-spam stderr
+                    if (!isPollingSpam) {
+                        console.error('[DiscordSubprocess] stderr:', msg);
+                    }
                     
                     // Capture OAuth token info for storage (new format with refresh token and type)
                     const oauthMatch = msg.match(/OAuth_TOKEN_FOR_STORAGE: access=(.+?),refresh=(.+?),expires=(\d+),type=(\d+)/);
@@ -432,7 +436,8 @@ export class DiscordSubprocess extends EventEmitter {
             try {
                 const jsonStr = JSON.stringify(req) + '\n';
                 // Skip verbose logging for continuous polling commands
-                if (command !== 'get_message_events') {
+                const silentCommands = ['get_message_events', 'get_user_messages'];
+                if (!silentCommands.includes(command)) {
                     console.log(`[DiscordSubprocess] Sending command: ${command} (id=${id}, timeout=${timeout}ms)`);
                 }
                 this.process.stdin!.write(jsonStr, (err) => {
@@ -442,7 +447,7 @@ export class DiscordSubprocess extends EventEmitter {
                         clearTimeout(timeoutId);
                         reject(err);
                     } else {
-                        if (command !== 'get_message_events') {
+                        if (!silentCommands.includes(command)) {
                             console.log(`[DiscordSubprocess] Command ${command} written to stdin`);
                         }
                     }

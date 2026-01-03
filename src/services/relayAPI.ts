@@ -173,6 +173,154 @@ export async function relayMessage(
 }
 
 /**
+ * Register extension for a specific lobby
+ */
+export async function registerLobby(lobbyId: string, extensionId: string): Promise<any> {
+  console.log(`[RelayAPI] Registering for lobby ${lobbyId}`);
+  
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${RELAY_API_URL}/register/${lobbyId}/${extensionId}`);
+    const isHttps = url.protocol === 'https:';
+    const client = isHttps ? https : http;
+
+    const options = {
+      hostname: url.hostname,
+      port: url.port,
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': 0,
+        'User-Agent': 'Discord-VSCode-Extension/1.0.0'
+      }
+    };
+
+    const req = client.request(options, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`Register lobby failed ${res.statusCode}: ${data}`));
+        } else {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e);
+          }
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+/**
+ * Unregister extension from a specific lobby
+ */
+export async function unregisterLobby(lobbyId: string, extensionId: string): Promise<any> {
+  console.log(`[RelayAPI] Unregistering from lobby ${lobbyId}`);
+  
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${RELAY_API_URL}/unregister/${lobbyId}/${extensionId}`);
+    const isHttps = url.protocol === 'https:';
+    const client = isHttps ? https : http;
+
+    const options = {
+      hostname: url.hostname,
+      port: url.port,
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': 0,
+        'User-Agent': 'Discord-VSCode-Extension/1.0.0'
+      }
+    };
+
+    const req = client.request(options, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`Unregister lobby failed ${res.statusCode}: ${data}`));
+        } else {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e);
+          }
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+/**
+ * Get messages from a lobby
+ */
+export async function getLobbyMessages(lobbyId: string, since?: number): Promise<any[]> {
+  console.log(`[RelayAPI] Getting messages for lobby ${lobbyId}`);
+  
+  return new Promise((resolve, reject) => {
+    let path = `/messages/${lobbyId}`;
+    if (since) {
+      path += `?since=${since}`;
+    }
+
+    const url = new URL(RELAY_API_URL + path);
+    const isHttps = url.protocol === 'https:';
+    const client = isHttps ? https : http;
+
+    const options = {
+      hostname: url.hostname,
+      port: url.port,
+      path: url.pathname + url.search,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Discord-VSCode-Extension/1.0.0'
+      }
+    };
+
+    const req = client.request(options, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`Get messages failed ${res.statusCode}`));
+        } else {
+          try {
+            const response = JSON.parse(data);
+            resolve(response.messages || []);
+          } catch (e) {
+            reject(e);
+          }
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+/**
  * Health check for the relay API
  */
 export async function healthCheck(): Promise<any> {

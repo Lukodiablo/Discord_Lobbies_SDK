@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { getDiscordClient, getContext, getLobbyChatTreeProvider, handleCodeShare } from '../extension';
 import { sdkAdapter } from '../services/discordSDKSubprocess';
-import { relayMessage } from '../services/relayAPI';
+import { relayMessage, registerLobby } from '../services/relayAPI';
 
 export async function sendLobbyMessageCommand() {
     const client = getDiscordClient();
@@ -100,6 +100,15 @@ export async function sendLobbyMessageCommand() {
             const userId = currentUser?.id || 'unknown';
             
             await sdkAdapter.sendLobbyMessage(lobbyId, message);
+            
+            // Register lobby with relay API before sending (ensures lobby is tracked)
+            const extensionId = vscode.extensions.getExtension('Lukodiablo0986.lobbies-sdk')?.id || 'unknown';
+            try {
+                await registerLobby(lobbyId, extensionId);
+                console.log('[sendLobbyMessage] Lobby registered with relay API');
+            } catch (registerError) {
+                console.warn('[sendLobbyMessage] Failed to register lobby (continuing anyway):', registerError);
+            }
             
             // Relay message to other extensions via API
             try {

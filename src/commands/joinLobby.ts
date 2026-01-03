@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { getDiscordClient, getContext } from '../extension';
+import { registerLobby } from '../services/relayAPI';
 
 export async function joinLobbyCommand() {
     const client = getDiscordClient();
@@ -102,6 +103,15 @@ export async function joinLobbyCommand() {
                     title: lobbyTitle,
                     description: 'Joined lobby'
                 });
+                
+                // Register lobby with relay API so we receive messages
+                const extensionId = vscode.extensions.getExtension('discord-vscode')?.id || 'unknown';
+                try {
+                    await registerLobby(lobbyId, extensionId);
+                    console.log(`[JoinLobby] Registered lobby ${lobbyId} with relay API`);
+                } catch (registerError) {
+                    console.warn('[JoinLobby] Failed to register lobby with relay API:', registerError);
+                }
                 
                 // Refresh tree view
                 vscode.commands.executeCommand('discord-vscode.refreshLobbies');

@@ -9,7 +9,7 @@ export class LobbyMessagePoller {
   private static instance: LobbyMessagePoller;
   private pollingInterval: NodeJS.Timeout | null = null;
   private lastMessageTimestamp = new Date();
-  private readonly POLL_INTERVAL = 500; // Poll every 500ms for real-time feel
+  private readonly POLL_INTERVAL = 2000; // Poll every 2 seconds for lobby messages (was 500ms - too spammy)
 
   private constructor() {}
 

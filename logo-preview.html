@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Discord Lobbies SDK - Logo Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            background: #0f0f0f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: monospace;
+        }
+        .container {
+            text-align: center;
+        }
+        h1 {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 40px;
+        }
+        .logo-preview {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .logo-box {
+            border: 2px solid #00ff00;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        .logo-box h2 {
+            color: #00ff00;
+            margin-top: 0;
+            font-size: 14px;
+        }
+        svg {
+            max-width: 300px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Discord Lobbies SDK - Logo Preview</h1>
+        <div class="logo-preview">
+            <div class="logo-box">
+                <h2>Circular Logo (NEW)</h2>
+                <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" style="width: 300px; height: 300px;">
+                    <defs>
+                        <!-- Circular clipping mask to make logo circular -->
+                        <clipPath id="circleClip">
+                            <circle cx="500" cy="500" r="420"/>
+                        </clipPath>
+                        <!-- Ultra vibrant gradients -->
+                        <radialGradient id="portalCore" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
+                            <stop offset="20%" style="stop-color:#EC4899;stop-opacity:1" />
+                            <stop offset="40%" style="stop-color:#C026D3;stop-opacity:1" />
+                            <stop offset="60%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                            <stop offset="80%" style="stop-color:#3B82F6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <radialGradient id="innerGlow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:#F0ABFC;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#A78BFA;stop-opacity:0.8" />
+                            <stop offset="100%" style="stop-color:#6366F1;stop-opacity:0.4" />
+                        </radialGradient>
+
+                        <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF0080;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#00F0FF;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#8000FF;stop-opacity:1" />
+                        </linearGradient>
+
+                        <linearGradient id="electricPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#F0ABFC;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#A78BFA;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+                        </linearGradient>
+
+                        <linearGradient id="cyberBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#67E8F9;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#1E3A8A;stop-opacity:1" />
+                        </linearGradient>
+
+                        <filter id="ultraGlow">
+                            <feGaussianBlur stdDeviation="15" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+
+                        <filter id="plasmaGlow">
+                            <feGaussianBlur stdDeviation="8" result="blur1"/>
+                            <feGaussianBlur stdDeviation="20" result="blur2"/>
+                            <feGaussianBlur stdDeviation="35" result="blur3"/>
+                            <feMerge>
+                                <feMergeNode in="blur3"/>
+                                <feMergeNode in="blur2"/>
+                                <feMergeNode in="blur1"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+
+                        <filter id="neonBurst">
+                            <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    <!-- Deep space background -->
+                    <rect width="1000" height="1000" fill="#000000"/>
+                    
+                    <!-- Main circular content group with clipping -->
+                    <g clip-path="url(#circleClip)">
+                        <!-- Animated background gradient -->
+                        <rect width="1000" height="1000" fill="url(#portalCore)" opacity="0.08">
+                            <animate attributeName="opacity" values="0.05;0.12;0.05" dur="4s" repeatCount="indefinite"/>
+                        </rect>
+
+                        <!-- Outer energy rings -->
+                        <g transform="translate(500, 500)">
+                            <!-- Ring 6 - Outermost -->
+                            <circle cx="0" cy="0" r="380" fill="none" stroke="url(#rainbow)" stroke-width="2" opacity="0.3" stroke-dasharray="20 10">
+                                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="40s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            
+                            <!-- Ring 5 -->
+                            <circle cx="0" cy="0" r="320" fill="none" stroke="url(#electricPurple)" stroke-width="3" opacity="0.4">
+                                <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="35s" repeatCount="indefinite"/>
+                                <animate attributeName="r" values="320;330;320" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                            
+                            <!-- Ring 4 -->
+                            <circle cx="0" cy="0" r="260" fill="none" stroke="url(#cyberBlue)" stroke-width="4" opacity="0.5">
+                                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="30s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2.5s" repeatCount="indefinite"/>
+                            </circle>
+
+                            <!-- Ring 3 - Bright energy -->
+                            <circle cx="0" cy="0" r="200" fill="none" stroke="url(#rainbow)" stroke-width="6" opacity="0.7">
+                                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="-360 0 0" dur="20s" repeatCount="indefinite"/>
+                                <animate attributeName="r" values="200;210;200" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+
+                            <!-- Ring 2 - Intense middle layer -->
+                            <circle cx="0" cy="0" r="150" fill="none" stroke="url(#electricPurple)" stroke-width="8" opacity="0.8" filter="url(#ultraGlow)">
+                                <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="15s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+
+                            <!-- Ring 1 - Inner sanctum -->
+                            <circle cx="0" cy="0" r="110" fill="none" stroke="url(#cyberBlue)" stroke-width="10" opacity="0.9" filter="url(#plasmaGlow)">
+                                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="10s" repeatCount="indefinite"/>
+                                <animate attributeName="r" values="110;115;110" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+
+                            <!-- PORTAL CORE - The main attraction -->
+                            <circle cx="0" cy="0" r="100" fill="url(#innerGlow)" filter="url(#ultraGlow)" opacity="0.6">
+                                <animate attributeName="r" values="100;105;100" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            
+                            <circle cx="0" cy="0" r="95" fill="url(#portalCore)" filter="url(#plasmaGlow)">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+        <p style="color: #00ff00; margin-top: 40px; font-size: 12px;">✓ Logo is now circular - everything outside the circles has been clipped!</p>
+    </div>
+</body>
+</html>

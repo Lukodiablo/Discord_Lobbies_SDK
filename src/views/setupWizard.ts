@@ -466,15 +466,19 @@ export class SetupWizard {
         }
 
         .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+    text-align: center;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
         .logo {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin: 0 auto 20px;
-            background: radial-gradient(circle at 30% 30%, #002fffff, #0088ff);
+            background: transparent;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -482,28 +486,6 @@ export class SetupWizard {
             font-size: 40px;
             position: relative;
             animation: portalFloat 3s ease-in-out infinite;
-        }
-
-        .logo::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 2px solid #00ff00;
-            animation: portalSpin 4s linear infinite;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
-        }
-
-        .logo::after {
-            content: '';
-            position: absolute;
-            width: 85%;
-            height: 85%;
-            border-radius: 50%;
-            border: 1px solid #0088ff;
-            animation: portalSpin 6s linear infinite reverse;
-            box-shadow: inset 0 0 20px rgba(0, 136, 255, 0.3);
         }
 
         @keyframes portalFloat {
@@ -784,10 +766,10 @@ export class SetupWizard {
     <canvas id="matrix-rain"></canvas>
     <div class="container">
         <div class="header">
-            <img src="${logoUri}" alt="Logo" class="logo-img" style="width: 60px; height: 60px; margin-bottom: 20px;" />
-            <h1>Discord Lobbies SDK</h1>
-            <div class="subtitle">Extension Setup Wizard</div>
-        </div>
+    <img src="${logoUri}" alt="Logo" class="logo" />
+    <h1>Discord Lobbies SDK</h1>
+    <div class="subtitle">Extension Setup Wizard</div>
+</div>
 
         <!-- Step Indicators -->
         <div class="steps">
