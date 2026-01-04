@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { getLobbyMessages } from './relayAPI';
+import { getLobbyChatTreeProvider } from '../extension';
 
 /**
  * Relay Message Poller - polls relay API for messages meant for this extension
@@ -75,7 +76,16 @@ export class RelayMessagePoller {
             
             console.log(`[RelayMessagePoller] 📡 New message in lobby ${lobbyId}`);
             
-            // Trigger message handler to show notification
+            // Update the LobbyChatTreeProvider with the message
+            const lobbyChatProvider = getLobbyChatTreeProvider();
+            if (lobbyChatProvider) {
+              lobbyChatProvider.setCurrentLobby(lobbyId);
+              const authorName = msg.author_name || msg.from || 'Unknown';
+              const authorId = msg.author_id || msg.from_id || 'unknown';
+              lobbyChatProvider.addMessage(authorName, authorId, msg.content || msg.message, false);
+            }
+            
+            // Also trigger notification handler for direct user notification
             vscode.commands.executeCommand('discord-vscode._onMessageCreated', msgId, Date.now());
           }
         }
