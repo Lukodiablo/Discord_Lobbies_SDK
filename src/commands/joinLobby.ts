@@ -4,7 +4,7 @@ import { registerLobby } from '../services/relayAPI';
 import { updateRelayPollerLobbies } from '../services/relayMessagePoller';
 import { isDiscordAppRunning } from '../utils/discordAppCheck';
 
-export async function joinLobbyCommand(options?: { lobbyId?: string; secret?: string }) {
+export async function joinLobbyCommand(options?: { lobbyId?: string; secret?: string; name?: string }) {
     const client = getDiscordClient();
     
     if (!client || !client.isConnected()) {
@@ -17,8 +17,8 @@ export async function joinLobbyCommand(options?: { lobbyId?: string; secret?: st
 
     // If direct parameters provided (e.g., from invite button), use them
     if (options?.lobbyId && options?.secret) {
-        console.log(`[joinLobby] Direct join with lobby ID: ${options.lobbyId}`);
-        await performLobbyJoin(client, context, options.lobbyId, options.secret);
+        console.log(`[joinLobby] Direct join with lobby ID: ${options.lobbyId}, Name: ${options.name || 'N/A'}`);
+        await performLobbyJoin(client, context, options.lobbyId, options.secret, options.name);
         return;
     }
 
@@ -80,13 +80,13 @@ export async function joinLobbyCommand(options?: { lobbyId?: string; secret?: st
         return;
     }
 
-    await performLobbyJoin(client, context, lobbyId, secret);
+    await performLobbyJoin(client, context, lobbyId, secret, undefined);
 }
 
 /**
  * Helper function to perform the actual lobby join
  */
-async function performLobbyJoin(client: any, context: any, lobbyId: string, secret: string) {
+async function performLobbyJoin(client: any, context: any, lobbyId: string, secret: string, invitedName?: string) {
     try {
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -155,11 +155,13 @@ async function performLobbyJoin(client: any, context: any, lobbyId: string, secr
             }
 
             // Store the lobby info with real or fallback title
+            // Use invited name if provided (from invite button), otherwise use fetched metadata
+            const finalTitle = invitedName || lobbyTitle;
             if (context) {
                 await context.workspaceState.update('currentLobby', {
                     id: lobbyId,
                     secret,
-                    title: lobbyTitle,
+                    title: finalTitle,
                     description: 'Joined lobby'
                 });
                 

@@ -1819,11 +1819,12 @@ fn handle_command(req: &Request) -> Response {
                     if let Ok(lobby_id) = lobby_id_str.parse::<u64>() {
                         let initialized = INITIALIZED.lock().unwrap();
                         if !*initialized {
+                            eprintln!("[Rust] ❌ Voice: SDK not initialized");
                             (false, None, Some("SDK not initialized".to_string()))
                         } else {
                             drop(initialized);
                             
-                            eprintln!("[Rust] Connecting to lobby voice: lobby_id={}", lobby_id);
+                            eprintln!("[Rust] 🎤 Connecting to lobby voice: lobby_id={}", lobby_id);
                             
                             let voice_connected = Arc::new(Mutex::new(false));
                             let voice_connected_clone = Arc::clone(&voice_connected);
@@ -1832,33 +1833,53 @@ fn handle_command(req: &Request) -> Response {
                             if let Ok(client_guard) = CLIENT_PTR.lock() {
                                 if *client_guard != 0 {
                                     let client_ref = unsafe { &mut *(*client_guard as *mut DiscordClient) };
+                                    eprintln!("[Rust] 🎤 Calling Discord_Client_StartCall()...");
                                     unsafe {
                                         Discord_Client_StartCall(client_ref, lobby_id, user_data);
                                     }
+                                    eprintln!("[Rust] 🎤 StartCall invoked, waiting for response...");
+                                } else {
+                                    eprintln!("[Rust] ❌ Voice: Client pointer is null");
+                                    return (false, None, Some("Client not initialized".to_string()));
                                 }
                             }
                             
                             let timeout = std::time::Instant::now();
+                            let mut callback_fired = false;
                             while timeout.elapsed() < Duration::from_secs(10) {
                                 unsafe { Discord_RunCallbacks(); }
                                 if *voice_connected.lock().unwrap() {
-                                    eprintln!("[Rust] ✅ Voice connected! Exiting loop.");
+                                    callback_fired = true;
+                                    eprintln!("[Rust] 🎤 ✅ Voice callback FIRED! Exiting wait loop.");
                                     break;
                                 }
-                                thread::sleep(Duration::from_millis(25));
+                                thread::sleep(Duration::from_millis(100));
                             }
                             
                             let success = *voice_connected.lock().unwrap();
-                            eprintln!("[Rust] Voice connect result: {}", success);
-                            (true, Some(serde_json::json!({"connected": success})), None)
+                            eprintln!("[Rust] 🎤 Voice connect result: success={}, callback_fired={}", success, callback_fired);
+                            
+                            if !success {
+                                eprintln!("[Rust] ❌ Voice connect FAILED - no callback received in 10 seconds");
+                                eprintln!("[Rust]    Possible causes:");
+                                eprintln!("[Rust]    - Discord app not running");
+                                eprintln!("[Rust]    - Not in a lobby (must join lobby first)");
+                                eprintln!("[Rust]    - Voice SDK not available on this platform/Discord build");
+                                eprintln!("[Rust]    - Timeout waiting for Discord voice init");
+                            }
+                            
+                            (true, Some(serde_json::json!({"connected": success, "callback_fired": callback_fired})), None)
                         }
                     } else {
+                        eprintln!("[Rust] ❌ Voice: Invalid lobby ID format");
                         (false, None, Some("Invalid lobby ID".to_string()))
                     }
                 } else {
+                    eprintln!("[Rust] ❌ Voice: Missing lobby_id argument");
                     (false, None, Some("Missing lobby_id argument".to_string()))
                 }
             } else {
+                eprintln!("[Rust] ❌ Voice: Missing arguments");
                 (false, None, Some("Missing arguments".to_string()))
             }
         }

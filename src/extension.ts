@@ -138,19 +138,23 @@ async function getDiscordConfig(): Promise<{ applicationId: string; clientId: st
 
 /**
  * Helper function to extract lobby invite details from a message
- * Returns { lobbyId, secret } if found, null otherwise
+ * Returns { lobbyId, secret, name } if found, null otherwise
  */
-function extractLobbyInviteDetails(content: string): { lobbyId: string; secret: string } | null {
+function extractLobbyInviteDetails(content: string): { lobbyId: string; secret: string; name?: string } | null {
   try {
     // Match pattern: "Lobby ID: <id>\nSecret: <secret>"
     const lobbyIdMatch = content.match(/Lobby ID:\s*(\d+)/);
     const secretMatch = content.match(/Secret:\s*(\S+)/);
     
+    // Extract lobby name from "You're invited to join: <name>" pattern
+    const nameMatch = content.match(/You're invited to join:\s*([^\n]+)/);
+    const name = nameMatch ? nameMatch[1].trim() : undefined;
+    
     if (lobbyIdMatch && secretMatch) {
       const lobbyId = lobbyIdMatch[1];
       const secret = secretMatch[1];
-      console.log(`[Extension] ✅ Extracted lobby invite: ID=${lobbyId}, Secret=${secret.substring(0, 5)}...`);
-      return { lobbyId, secret };
+      console.log(`[Extension] ✅ Extracted lobby invite: ID=${lobbyId}, Secret=${secret.substring(0, 5)}..., Name=${name || 'N/A'}`);
+      return { lobbyId, secret, name };
     }
   } catch (error) {
     console.warn('[Extension] Failed to extract lobby invite details:', error);
@@ -932,7 +936,8 @@ export async function activate(context: vscode.ExtensionContext) {
                     console.log(`[Extension] User clicked Join - joining lobby ${inviteDetails.lobbyId}`);
                     vscode.commands.executeCommand('discord-vscode.joinLobby', {
                       lobbyId: inviteDetails.lobbyId,
-                      secret: inviteDetails.secret
+                      secret: inviteDetails.secret,
+                      name: inviteDetails.name
                     });
                   } else if (selection === 'View') {
                     // Show full message details
