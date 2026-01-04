@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { getDiscordClient, getContext } from '../extension';
 import { registerLobby } from '../services/relayAPI';
 import { updateRelayPollerLobbies } from '../services/relayMessagePoller';
+import { isDiscordAppRunning } from '../utils/discordAppCheck';
 
 export async function joinLobbyCommand(options?: { lobbyId?: string; secret?: string }) {
     const client = getDiscordClient();
@@ -92,6 +93,49 @@ async function performLobbyJoin(client: any, context: any, lobbyId: string, secr
             title: 'Joining lobby...',
             cancellable: false
         }, async () => {
+            // CRITICAL: First, actually join the Discord lobby with the SDK using the secret
+            // This makes us a member so we can receive messages
+            let actualJoinedLobbyId: string | null = null;
+            try {
+                console.log(`[JoinLobby] ==================== START JOIN PROCESS ====================`);
+                console.log(`[JoinLobby] Calling Discord SDK CreateOrJoinLobby with secret: ${secret.substring(0, 5)}...`);
+                console.log(`[JoinLobby] Expected lobby ID from invite: ${lobbyId}`);
+                
+                actualJoinedLobbyId = await client.createOrJoinLobby(secret);
+                
+                console.log(`[JoinLobby] ✅ createOrJoinLobby returned: ${actualJoinedLobbyId}`);
+                console.log(`[JoinLobby] Expected: ${lobbyId}`);
+                console.log(`[JoinLobby] Match: ${actualJoinedLobbyId === lobbyId ? '✅ YES' : '❌ NO'}`);
+                
+                // Verify we got the right lobby
+                if (actualJoinedLobbyId !== lobbyId) {
+                    console.warn(`[JoinLobby] ⚠️  SDK returned different lobby ID: ${actualJoinedLobbyId} vs requested ${lobbyId}`);
+                }
+            } catch (sdkError) {
+                console.error('[JoinLobby] ❌ CRITICAL: SDK call failed completely:', sdkError);
+                vscode.window.showErrorMessage(`❌ Failed to join lobby with Discord SDK:\n${sdkError}`);
+                throw sdkError; // Don't continue if join failed
+            }
+
+            // After joining, refresh lobby list to ensure cache is updated
+            try {
+                console.log(`[JoinLobby] Refreshing lobby list to verify join...`);
+                const lobbies = await client.getLobbyIds();
+                console.log(`[JoinLobby] Your lobbies after join: [${lobbies.join(', ')}]`);
+                console.log(`[JoinLobby] Checking if ${lobbyId} is in list: ${lobbies.includes(lobbyId) ? '✅ YES' : '❌ NO'}`);
+                
+                if (!lobbies.includes(lobbyId) && !lobbies.includes(actualJoinedLobbyId || '')) {
+                    console.error(`[JoinLobby] ❌ CRITICAL: Lobby ${lobbyId} not found in your lobby list!`);
+                    console.error(`[JoinLobby] This means createOrJoinLobby may have failed silently.`);
+                    console.error(`[JoinLobby] Returned ID: ${actualJoinedLobbyId}, Expected: ${lobbyId}`);
+                    vscode.window.showWarningMessage(`⚠️  Warning: Lobby may not have been joined successfully. Check logs.`);
+                }
+            } catch (error) {
+                console.warn('[JoinLobby] Failed to refresh lobbies list:', error);
+            }
+
+            console.log(`[JoinLobby] ==================== END JOIN PROCESS ====================`);
+
             // Fetch lobby metadata from Discord SDK
             let lobbyTitle = `Lobby ${lobbyId.substring(0, 8)}...`;
             try {

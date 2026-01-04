@@ -71,6 +71,8 @@ export class LobbyMessagePoller {
           // Emit event so extension can process it
           vscode.commands.executeCommand('discord-vscode._onMessageCreated', messageId, timestamp);
         }
+      } else {
+        // Silently skip when no events (very frequent)
       }
     } catch (error) {
       // Silently ignore polling errors to avoid spam in logs
