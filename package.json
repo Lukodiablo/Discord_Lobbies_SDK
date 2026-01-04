@@ -206,6 +206,11 @@
           "group": "inline@3"
         },
         {
+          "command": "discord-vscode.disconnectLobbyVoice",
+          "when": "view == discord-vscode.lobbiesView && viewItem == disconnect_voice",
+          "group": "inline@3a"
+        },
+        {
           "command": "discord-vscode.toggleMuteLobby",
           "when": "view == discord-vscode.lobbiesView && viewItem == toggle_mute",
           "group": "inline@4"

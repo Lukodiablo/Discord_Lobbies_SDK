@@ -244,6 +244,12 @@ export class LobbiesTreeProvider implements vscode.TreeDataProvider<LobbyItem> {
           vscode.TreeItemCollapsibleState.None
         ),
         new LobbyItem(
+          '📴 Leave Voice',
+          element.lobbyId,
+          'disconnect_voice',
+          vscode.TreeItemCollapsibleState.None
+        ),
+        new LobbyItem(
           '🎤 Toggle Microphone',
           element.lobbyId,
           'toggle_mute',
