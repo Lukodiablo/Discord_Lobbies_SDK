@@ -201,14 +201,19 @@
           "group": "inline@2"
         },
         {
+          "command": "discord-vscode.connectLobbyVoice",
+          "when": "view == discord-vscode.lobbiesView && viewItem == connect_voice",
+          "group": "inline@3"
+        },
+        {
           "command": "discord-vscode.toggleMuteLobby",
           "when": "view == discord-vscode.lobbiesView && viewItem == toggle_mute",
-          "group": "inline@3"
+          "group": "inline@4"
         },
         {
           "command": "discord-vscode.toggleDeafLobby",
           "when": "view == discord-vscode.lobbiesView && viewItem == toggle_deaf",
-          "group": "inline@4"
+          "group": "inline@5"
         },
         {
           "command": "discord-vscode.leaveLobby",

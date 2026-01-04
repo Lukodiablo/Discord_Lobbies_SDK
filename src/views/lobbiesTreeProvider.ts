@@ -6,7 +6,7 @@ class LobbyItem extends vscode.TreeItem {
   constructor(
     label: string,
     public readonly lobbyId: string,
-    public readonly type: 'root' | 'lobby' | 'send_message' | 'leave' | 'share_code' | 'toggle_mute' | 'toggle_deaf' | 'empty' | 'error',
+    public readonly type: 'root' | 'lobby' | 'send_message' | 'leave' | 'share_code' | 'toggle_mute' | 'toggle_deaf' | 'connect_voice' | 'disconnect_voice' | 'empty' | 'error',
     collapsibleState: vscode.TreeItemCollapsibleState,
     public readonly secret?: string,
   ) {
@@ -51,6 +51,12 @@ class LobbyItem extends vscode.TreeItem {
         break;
       case 'toggle_deaf':
         this.iconPath = new vscode.ThemeIcon('unmute');
+        break;
+      case 'connect_voice':
+        this.iconPath = new vscode.ThemeIcon('call-incoming');
+        break;
+      case 'disconnect_voice':
+        this.iconPath = new vscode.ThemeIcon('call-outgoing');
         break;
       case 'error':
         this.iconPath = new vscode.ThemeIcon('error');
@@ -229,6 +235,12 @@ export class LobbiesTreeProvider implements vscode.TreeDataProvider<LobbyItem> {
           '� Share Code',
           element.lobbyId,
           'share_code',
+          vscode.TreeItemCollapsibleState.None
+        ),
+        new LobbyItem(
+          '📞 Connect Voice',
+          element.lobbyId,
+          'connect_voice',
           vscode.TreeItemCollapsibleState.None
         ),
         new LobbyItem(
