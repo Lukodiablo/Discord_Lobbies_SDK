@@ -5,6 +5,14 @@ build/
 
 # Rust
 rust-native/target/
+# EXCEPT: Keep compiled binaries for all platforms (distribution)
+!rust-native/target/release/lobbies-sdk*
+!rust-native/target/x86_64-pc-windows-msvc/release/lobbies-sdk.exe
+!rust-native/target/aarch64-pc-windows-msvc/release/lobbies-sdk.exe
+!rust-native/target/x86_64-unknown-linux-gnu/release/lobbies-sdk
+!rust-native/target/aarch64-unknown-linux-gnu/release/lobbies-sdk
+!rust-native/target/x86_64-apple-darwin/release/lobbies-sdk
+!rust-native/target/aarch64-apple-darwin/release/lobbies-sdk
 *.rlib
 *.so
 *.dylib
