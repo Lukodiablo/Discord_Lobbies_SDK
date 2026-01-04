@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { getDiscordClient, getContext, getLobbyChatTreeProvider, handleCodeShare } from '../extension';
 import { sdkAdapter } from '../services/discordSDKSubprocess';
 import { relayMessage, registerLobby } from '../services/relayAPI';
+import { cacheLobbyChatMessage } from '../services/lobbyMessagePoller';
 
 export async function sendLobbyMessageCommand() {
     const client = getDiscordClient();
@@ -163,6 +164,15 @@ export async function sendLobbyMessageCommand() {
                     message,
                     true // isOwn
                 );
+                
+                // Cache sent message in VS Code secrets for persistence
+                await cacheLobbyChatMessage(lobbyId, {
+                  id: `self-${Date.now()}`, // Local ID for sent messages
+                  author_id: currentUser?.id || 'self',
+                  author_name: currentUser?.username || 'You',
+                  content: message,
+                  timestamp: Date.now()
+                });
             }
             
             // Show notification with message content

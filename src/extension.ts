@@ -41,7 +41,7 @@ import { QuickAccessCommands } from './commands/quickAccess';
 import { ChatViewProvider as ChatViewProviderText } from './views/chatViewProvider';
 import { SharedCodeProvider } from './views/sharedCodeProvider';
 import { RichPresenceTreeProvider } from './views/richPresenceTreeProvider';
-import { startMessagePoller, stopMessagePoller } from './services/lobbyMessagePoller';
+import { startMessagePoller, stopMessagePoller, cacheLobbyChatMessage } from './services/lobbyMessagePoller';
 import { startDMPoller, stopDMPoller, updateDMPollerFriends } from './services/dmMessagePoller';
 import { startRelayPoller, stopRelayPoller, updateRelayPollerLobbies } from './services/relayMessagePoller';
 import { registerExtension, healthCheck } from './services/relayAPI';
@@ -134,6 +134,35 @@ async function getDiscordConfig(): Promise<{ applicationId: string; clientId: st
       redirectUri: 'http://localhost:3000/oauth/callback'
     };
   }
+}
+
+/**
+ * Helper function to extract lobby invite details from a message
+ * Returns { lobbyId, secret } if found, null otherwise
+ */
+function extractLobbyInviteDetails(content: string): { lobbyId: string; secret: string } | null {
+  try {
+    // Match pattern: "Lobby ID: <id>\nSecret: <secret>"
+    const lobbyIdMatch = content.match(/Lobby ID:\s*(\d+)/);
+    const secretMatch = content.match(/Secret:\s*(\S+)/);
+    
+    if (lobbyIdMatch && secretMatch) {
+      const lobbyId = lobbyIdMatch[1];
+      const secret = secretMatch[1];
+      console.log(`[Extension] ✅ Extracted lobby invite: ID=${lobbyId}, Secret=${secret.substring(0, 5)}...`);
+      return { lobbyId, secret };
+    }
+  } catch (error) {
+    console.warn('[Extension] Failed to extract lobby invite details:', error);
+  }
+  return null;
+}
+
+/**
+ * Helper function to detect if a message is a lobby invite
+ */
+function isLobbyInviteMessage(content: string): boolean {
+  return content.includes("You're invited to join") && content.includes("Lobby ID:") && content.includes("Secret:");
 }
 
 /**
@@ -870,6 +899,15 @@ export async function activate(context: vscode.ExtensionContext) {
                   false, // isOwn
                   msgId.toString() // messageId for deduplication
                 );
+                
+                // Cache message in VS Code secrets for persistence
+                await cacheLobbyChatMessage(currentLobby.id, {
+                  id: msgId.toString(),
+                  author_id: authorId,
+                  author_name: authorName,
+                  content: content,
+                  timestamp: timestamp
+                });
               } else if (messageSource === 'dm') {
                 // For DMs, show notification (DM panel not yet implemented)
                 // Notification will be shown below
@@ -878,29 +916,67 @@ export async function activate(context: vscode.ExtensionContext) {
               
               // Show notification with actual message content and username
               console.log(`[Extension] About to show notification for: ${displayName}`);
-              vscode.window.showInformationMessage(
-                `💬 Message from ${displayName}: ${content.substring(0, 80)}${content.length > 80 ? '...' : ''}`,
-                'View', 'Reply'
-              ).then(selection => {
-                if (selection === 'View') {
-                  // Show full message details
-                  vscode.window.showInformationMessage(
-                    `📨 From: ${displayName}\n\n${content}`,
-                    'OK'
-                  );
-                } else if (selection === 'Reply') {
-                  // Open reply dialog
-                  vscode.window.showInputBox({
-                    placeHolder: 'Type your reply...',
-                    title: `Reply to ${displayName}`
-                  }).then(reply => {
-                    if (reply) {
-                      // Send reply via sendDMToFriend
-                      vscode.commands.executeCommand('discord-vscode.sendDMToFriend', authorId, reply);
-                    }
-                  });
-                }
-              });
+              
+              // Check if this is a lobby invite message
+              const inviteDetails = isLobbyInviteMessage(content) ? extractLobbyInviteDetails(content) : null;
+              
+              if (inviteDetails) {
+                // Show invite notification with "Join" button
+                console.log(`[Extension] 🎮 Detected lobby invite in message`);
+                vscode.window.showInformationMessage(
+                  `🎮 Lobby invite from ${displayName}!`,
+                  'Join', 'View', 'Reply'
+                ).then(selection => {
+                  if (selection === 'Join') {
+                    // Join the lobby directly
+                    console.log(`[Extension] User clicked Join - joining lobby ${inviteDetails.lobbyId}`);
+                    vscode.commands.executeCommand('discord-vscode.joinLobby', {
+                      lobbyId: inviteDetails.lobbyId,
+                      secret: inviteDetails.secret
+                    });
+                  } else if (selection === 'View') {
+                    // Show full message details
+                    vscode.window.showInformationMessage(
+                      `📨 From: ${displayName}\n\n${content}`,
+                      'OK'
+                    );
+                  } else if (selection === 'Reply') {
+                    // Open reply dialog
+                    vscode.window.showInputBox({
+                      placeHolder: 'Type your reply...',
+                      title: `Reply to ${displayName}`
+                    }).then(reply => {
+                      if (reply) {
+                        vscode.commands.executeCommand('discord-vscode.sendDMToFriend', authorId, reply);
+                      }
+                    });
+                  }
+                });
+              } else {
+                // Regular message notification
+                vscode.window.showInformationMessage(
+                  `💬 Message from ${displayName}: ${content.substring(0, 80)}${content.length > 80 ? '...' : ''}`,
+                  'View', 'Reply'
+                ).then(selection => {
+                  if (selection === 'View') {
+                    // Show full message details
+                    vscode.window.showInformationMessage(
+                      `📨 From: ${displayName}\n\n${content}`,
+                      'OK'
+                    );
+                  } else if (selection === 'Reply') {
+                    // Open reply dialog
+                    vscode.window.showInputBox({
+                      placeHolder: 'Type your reply...',
+                      title: `Reply to ${displayName}`
+                    }).then(reply => {
+                      if (reply) {
+                        vscode.commands.executeCommand('discord-vscode.sendDMToFriend', authorId, reply);
+                      }
+                    });
+                  }
+                });
+              }
             }
           } else {
             // Fallback: show just the notification

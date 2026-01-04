@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { DiscordClient } from '../gateway/discordClient';
 import { getContext } from '../extension';
+import { getCachedLobbyChatMessages } from '../services/lobbyMessagePoller';
 
 interface LobbyMessage {
   id: string;
@@ -78,14 +79,46 @@ export class LobbyChatTreeProvider implements vscode.TreeDataProvider<LobbyMessa
       // Initialize messages array for this lobby if not present
       if (!this.messages.has(lobbyId)) {
         this.messages.set(lobbyId, []);
-        // Only load messages if we're starting fresh for this lobby
-        this.loadMessages(lobbyId);
+        // Load cached messages first, then fetch from SDK
+        this.loadCachedMessagesFirst(lobbyId);
       } else {
         console.log(`[LobbyChatTreeProvider] Lobby ${lobbyId} already has ${this.messages.get(lobbyId)?.length || 0} messages, not reloading`);
       }
       
       this.refresh();
     }
+  }
+
+  /**
+   * Load cached messages first for immediate display, then fetch from SDK
+   */
+  private async loadCachedMessagesFirst(lobbyId: string): Promise<void> {
+    try {
+      // First, load cached messages for instant display
+      const cached = await getCachedLobbyChatMessages(lobbyId);
+      if (cached && cached.length > 0) {
+        const cachedMessages: LobbyMessage[] = cached.map((msg: any) => ({
+          id: msg.id || `msg-${Date.now()}`,
+          author: msg.author_name || msg.author_id || 'Unknown',
+          authorId: msg.author_id || 'unknown',
+          content: msg.content || '',
+          timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+          isOwn: msg.author_id === this.currentUser?.id || msg.author_id === 'self'
+        }));
+
+        // Sort by timestamp ascending (oldest first)
+        cachedMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        
+        this.messages.set(lobbyId, cachedMessages);
+        console.log(`[LobbyChatTreeProvider] Loaded ${cachedMessages.length} cached messages for lobby ${lobbyId}`);
+        this.refresh();
+      }
+    } catch (error) {
+      console.warn('[LobbyChatTreeProvider] Failed to load cached messages:', error);
+    }
+
+    // Then load from SDK in the background
+    this.loadMessages(lobbyId);
   }
 
   /**

@@ -3,7 +3,7 @@ import { getDiscordClient, getContext } from '../extension';
 import { registerLobby } from '../services/relayAPI';
 import { updateRelayPollerLobbies } from '../services/relayMessagePoller';
 
-export async function joinLobbyCommand() {
+export async function joinLobbyCommand(options?: { lobbyId?: string; secret?: string }) {
     const client = getDiscordClient();
     
     if (!client || !client.isConnected()) {
@@ -13,6 +13,13 @@ export async function joinLobbyCommand() {
 
     const context = getContext();
     const currentLobby = context?.workspaceState.get('currentLobby') as any;
+
+    // If direct parameters provided (e.g., from invite button), use them
+    if (options?.lobbyId && options?.secret) {
+        console.log(`[joinLobby] Direct join with lobby ID: ${options.lobbyId}`);
+        await performLobbyJoin(client, context, options.lobbyId, options.secret);
+        return;
+    }
 
     // If already in a lobby, ask if they want to rejoin or join new one
     if (currentLobby && currentLobby.id && currentLobby.secret) {
@@ -72,6 +79,13 @@ export async function joinLobbyCommand() {
         return;
     }
 
+    await performLobbyJoin(client, context, lobbyId, secret);
+}
+
+/**
+ * Helper function to perform the actual lobby join
+ */
+async function performLobbyJoin(client: any, context: any, lobbyId: string, secret: string) {
     try {
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
