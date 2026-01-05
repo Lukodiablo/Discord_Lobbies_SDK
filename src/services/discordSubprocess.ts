@@ -46,6 +46,7 @@ export class DiscordSubprocess extends EventEmitter {
         
         console.log(`[DiscordSubprocess] 🔍 Searching for Rust binary (${binaryName})...`);
         console.log(`[DiscordSubprocess] __dirname = ${__dirname}`);
+        console.log(`[DiscordSubprocess] Platform: ${process.platform}, Arch: ${process.arch}`);
         
         // Search upward from current directory to find rust-native
         let currentDir = __dirname;
@@ -55,23 +56,85 @@ export class DiscordSubprocess extends EventEmitter {
         for (let i = 0; i < maxDepth; i++) {
             const rustNativeDir = path.join(currentDir, 'rust-native');
             
-            // Try both release and debug builds
-            const releaseBinary = path.join(rustNativeDir, 'target/release', binaryName);
-            const debugBinary = path.join(rustNativeDir, 'target/debug', binaryName);
-            
-            possiblePaths.push(releaseBinary);
-            possiblePaths.push(debugBinary);
-            
-            console.log(`[DiscordSubprocess] Checking level ${i}: ${releaseBinary}`);
-            
-            if (fs.existsSync(releaseBinary)) {
-                console.log(`[DiscordSubprocess] ✅ Found binary at: ${releaseBinary}`);
-                return releaseBinary;
-            }
-            
-            if (fs.existsSync(debugBinary)) {
-                console.log(`[DiscordSubprocess] ✅ Found binary at: ${debugBinary}`);
-                return debugBinary;
+            // For Windows: check both native and cross-compilation targets
+            if (isWindows) {
+                // First try native builds (target/release)
+                const winReleaseBinary = path.join(rustNativeDir, 'target/release', binaryName);
+                const winDebugBinary = path.join(rustNativeDir, 'target/debug', binaryName);
+                possiblePaths.push(winReleaseBinary);
+                possiblePaths.push(winDebugBinary);
+                
+                // Then try x86_64-pc-windows-msvc (cross-compile from Linux/Mac for Windows)
+                const x86_64ReleaseBinary = path.join(rustNativeDir, 'target/x86_64-pc-windows-msvc/release', binaryName);
+                const x86_64DebugBinary = path.join(rustNativeDir, 'target/x86_64-pc-windows-msvc/debug', binaryName);
+                possiblePaths.push(x86_64ReleaseBinary);
+                possiblePaths.push(x86_64DebugBinary);
+                
+                // Try aarch64-pc-windows-msvc for ARM64 Windows
+                const arm64ReleaseBinary = path.join(rustNativeDir, 'target/aarch64-pc-windows-msvc/release', binaryName);
+                const arm64DebugBinary = path.join(rustNativeDir, 'target/aarch64-pc-windows-msvc/debug', binaryName);
+                possiblePaths.push(arm64ReleaseBinary);
+                possiblePaths.push(arm64DebugBinary);
+                
+                console.log(`[DiscordSubprocess] Checking level ${i} (Windows target paths)...`);
+                
+                // Check all Windows paths
+                for (const binPath of [winReleaseBinary, winDebugBinary, x86_64ReleaseBinary, x86_64DebugBinary, arm64ReleaseBinary, arm64DebugBinary]) {
+                    if (fs.existsSync(binPath)) {
+                        console.log(`[DiscordSubprocess] ✅ Found binary at: ${binPath}`);
+                        return binPath;
+                    }
+                }
+            } else {
+                // For Linux/macOS: check standard targets and cross-compilation targets
+                const releaseBinary = path.join(rustNativeDir, 'target/release', binaryName);
+                const debugBinary = path.join(rustNativeDir, 'target/debug', binaryName);
+                
+                possiblePaths.push(releaseBinary);
+                possiblePaths.push(debugBinary);
+                
+                console.log(`[DiscordSubprocess] Checking level ${i} (Unix/macOS target paths)...`);
+                
+                if (fs.existsSync(releaseBinary)) {
+                    console.log(`[DiscordSubprocess] ✅ Found binary at: ${releaseBinary}`);
+                    return releaseBinary;
+                }
+                
+                if (fs.existsSync(debugBinary)) {
+                    console.log(`[DiscordSubprocess] ✅ Found binary at: ${debugBinary}`);
+                    return debugBinary;
+                }
+                
+                // For macOS: also check cross-compilation targets (built from Linux/Windows)
+                if (process.platform === 'darwin') {
+                    const arch = process.arch;
+                    const x86_64_apple_releaseBinary = path.join(rustNativeDir, 'target/x86_64-apple-darwin/release', binaryName);
+                    const aarch64_apple_releaseBinary = path.join(rustNativeDir, 'target/aarch64-apple-darwin/release', binaryName);
+                    
+                    const macOSBinaries = arch === 'arm64' 
+                        ? [aarch64_apple_releaseBinary, x86_64_apple_releaseBinary]
+                        : [x86_64_apple_releaseBinary, aarch64_apple_releaseBinary];
+                    
+                    possiblePaths.push(...macOSBinaries);
+                    
+                    for (const binPath of macOSBinaries) {
+                        if (fs.existsSync(binPath)) {
+                            console.log(`[DiscordSubprocess] ✅ Found macOS binary at: ${binPath}`);
+                            return binPath;
+                        }
+                    }
+                }
+                
+                // For Linux: also check cross-compilation targets (ARM64)
+                if (process.platform === 'linux') {
+                    const aarch64_gnu_releaseBinary = path.join(rustNativeDir, 'target/aarch64-unknown-linux-gnu/release', binaryName);
+                    possiblePaths.push(aarch64_gnu_releaseBinary);
+                    
+                    if (fs.existsSync(aarch64_gnu_releaseBinary)) {
+                        console.log(`[DiscordSubprocess] ✅ Found Linux ARM64 binary at: ${aarch64_gnu_releaseBinary}`);
+                        return aarch64_gnu_releaseBinary;
+                    }
+                }
             }
             
             // Move up one directory

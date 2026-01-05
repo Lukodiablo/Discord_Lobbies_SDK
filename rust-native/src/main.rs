@@ -1840,7 +1840,12 @@ fn handle_command(req: &Request) -> Response {
                                     eprintln!("[Rust] 🎤 StartCall invoked, waiting for response...");
                                 } else {
                                     eprintln!("[Rust] ❌ Voice: Client pointer is null");
-                                    return (false, None, Some("Client not initialized".to_string()));
+                                    return Response {
+                                        id: req.id,
+                                        success: false,
+                                        result: None,
+                                        error: Some("Client not initialized".to_string()),
+                                    };
                                 }
                             }
                             

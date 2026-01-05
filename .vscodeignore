@@ -57,6 +57,48 @@ rust-native/target/release/libdiscord*
 rust-native/target/.rustc_info.json
 rust-native/target/CACHEDIR.TAG
 rust-native/target/flycheck0/
+# Windows binaries - KEEP executable and DLL files, exclude build artifacts
+rust-native/target/x86_64-pc-windows-msvc/release/build/
+rust-native/target/x86_64-pc-windows-msvc/release/deps/
+rust-native/target/x86_64-pc-windows-msvc/release/examples/
+rust-native/target/x86_64-pc-windows-msvc/release/incremental/
+rust-native/target/x86_64-pc-windows-msvc/release/.fingerprint/
+rust-native/target/x86_64-pc-windows-msvc/release/*.d
+rust-native/target/x86_64-pc-windows-msvc/release/*.rlib
+rust-native/target/x86_64-pc-windows-msvc/release/*.pdb
+# ARM64 Windows binaries - KEEP executable files
+rust-native/target/aarch64-pc-windows-msvc/release/build/
+rust-native/target/aarch64-pc-windows-msvc/release/deps/
+rust-native/target/aarch64-pc-windows-msvc/release/examples/
+rust-native/target/aarch64-pc-windows-msvc/release/incremental/
+rust-native/target/aarch64-pc-windows-msvc/release/.fingerprint/
+rust-native/target/aarch64-pc-windows-msvc/release/*.d
+rust-native/target/aarch64-pc-windows-msvc/release/*.rlib
+rust-native/target/aarch64-pc-windows-msvc/release/*.pdb
+# macOS Intel binaries - KEEP executable files
+rust-native/target/x86_64-apple-darwin/release/build/
+rust-native/target/x86_64-apple-darwin/release/deps/
+rust-native/target/x86_64-apple-darwin/release/examples/
+rust-native/target/x86_64-apple-darwin/release/incremental/
+rust-native/target/x86_64-apple-darwin/release/.fingerprint/
+rust-native/target/x86_64-apple-darwin/release/*.d
+rust-native/target/x86_64-apple-darwin/release/*.rlib
+# macOS ARM64 (Apple Silicon) binaries - KEEP executable files
+rust-native/target/aarch64-apple-darwin/release/build/
+rust-native/target/aarch64-apple-darwin/release/deps/
+rust-native/target/aarch64-apple-darwin/release/examples/
+rust-native/target/aarch64-apple-darwin/release/incremental/
+rust-native/target/aarch64-apple-darwin/release/.fingerprint/
+rust-native/target/aarch64-apple-darwin/release/*.d
+rust-native/target/aarch64-apple-darwin/release/*.rlib
+# Linux ARM64 binaries - KEEP executable files
+rust-native/target/aarch64-unknown-linux-gnu/release/build/
+rust-native/target/aarch64-unknown-linux-gnu/release/deps/
+rust-native/target/aarch64-unknown-linux-gnu/release/examples/
+rust-native/target/aarch64-unknown-linux-gnu/release/incremental/
+rust-native/target/aarch64-unknown-linux-gnu/release/.fingerprint/
+rust-native/target/aarch64-unknown-linux-gnu/release/*.d
+rust-native/target/aarch64-unknown-linux-gnu/release/*.rlib
 rust-native/.git/
 rust-native/.gitignore
 

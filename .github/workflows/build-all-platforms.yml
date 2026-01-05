@@ -1,0 +1,165 @@
+name: Build All Platform Binaries
+
+on:
+  workflow_dispatch:  # Manual trigger - for creating universal VSIX
+  release:
+    types: [published]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build Linux binary (x86_64)
+        working-directory: rust-native
+        run: cargo build --release
+      
+      - name: Build Linux ARM64 binary (aarch64)
+        working-directory: rust-native
+        run: |
+          rustup target add aarch64-unknown-linux-gnu
+          cargo build --release --target aarch64-unknown-linux-gnu
+      
+      - name: Upload Linux binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-binaries
+          path: rust-native/target/
+          retention-days: 7
+
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build macOS x86_64
+        working-directory: rust-native
+        run: |
+          rustup target add x86_64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
+      
+      - name: Build macOS ARM64 (Apple Silicon)
+        working-directory: rust-native
+        run: |
+          rustup target add aarch64-apple-darwin
+          cargo build --release --target aarch64-apple-darwin
+      
+      - name: Upload macOS binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-binaries
+          path: rust-native/target/
+          retention-days: 7
+
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build Windows x86_64
+        working-directory: rust-native
+        run: cargo build --release --target x86_64-pc-windows-msvc
+      
+      - name: Build Windows ARM64
+        working-directory: rust-native
+        run: |
+          rustup target add aarch64-pc-windows-msvc
+          cargo build --release --target aarch64-pc-windows-msvc
+      
+      - name: Upload Windows binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: rust-native/target/
+          retention-days: 7
+
+  create-universal-release:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-platform-binaries
+      
+      - name: Create manifest
+        run: |
+          cat > PLATFORM_BINARIES_MANIFEST.md << 'EOF'
+          # Cross-Platform Binary Build Results
+          
+          Generated: $(date)
+          
+          ## Included Platforms
+          
+          - ✅ Linux (x86_64 + aarch64)
+          - ✅ macOS (x86_64 + aarch64/Apple Silicon)
+          - ✅ Windows (x86_64 + aarch64)
+          
+          ## Binary Locations
+          
+          After downloading artifacts, place in rust-native/target/
+          
+          ### Linux
+          ```
+          target/release/lobbies-sdk              # x86_64
+          target/aarch64-unknown-linux-gnu/       # ARM64
+          ```
+          
+          ### macOS
+          ```
+          target/x86_64-apple-darwin/release/lobbies-sdk
+          target/aarch64-apple-darwin/release/lobbies-sdk
+          ```
+          
+          ### Windows
+          ```
+          target/x86_64-pc-windows-msvc/release/lobbies-sdk.exe
+          target/aarch64-pc-windows-msvc/release/lobbies-sdk.exe
+          ```
+          
+          ## Next Steps
+          
+          1. Merge all binaries into rust-native/target/
+          2. Rebuild VSIX:
+             ```bash
+             npm run vscode:prepublish
+             npx vsce package
+             ```
+          3. The resulting VSIX will be universal - works on all platforms!
+          EOF
+          cat PLATFORM_BINARIES_MANIFEST.md
+      
+      - name: List build results
+        run: |
+          echo "=== Build Artifacts ===" 
+          find all-platform-binaries -type f -name "lobbies-sdk*" -o -name "discord_social_sdk_rust*" | head -30
+
+  notify:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Check build status
+        run: |
+          echo "🔨 Build Status:"
+          echo "- Linux: ${{ needs.build-linux.result }}"
+          echo "- macOS: ${{ needs.build-macos.result }}"
+          echo "- Windows: ${{ needs.build-windows.result }}"
