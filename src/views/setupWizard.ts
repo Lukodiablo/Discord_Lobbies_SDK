@@ -168,13 +168,39 @@ export class SetupWizard {
     }
 
     private async detectDiscord(): Promise<void> {
-        // Don't auto-detect - just tell user to open Discord
-        this.diagnostics.logSetupProgress(1, 'User instructed to open Discord desktop app');
+        this.diagnostics.logSetupProgress(1, 'Checking for Discord desktop app...');
         this.panel?.webview.postMessage({
             command: 'discord-status',
-            status: 'waiting',
-            message: 'Please open Discord desktop app, then click continue'
+            status: 'checking',
+            message: 'Checking for Discord...'
         });
+
+        const { DiscordDetector } = await import('../utils/discordDetector');
+        const result = await DiscordDetector.isDiscordRunning();
+
+        if (result.isRunning) {
+            this.diagnostics.logSetupProgress(1, `✅ Discord found: ${result.processName}`);
+            this.panel?.webview.postMessage({
+                command: 'discord-status',
+                status: 'found',
+                message: `✅ Discord is running (${result.processName})`,
+                details: result.details
+            });
+            // Auto-advance after 1 second when Discord is found
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await this.nextStep();
+        } else {
+            this.diagnostics.logSetupProgress(1, `❌ Discord not running: ${result.details}`);
+            this.panel?.webview.postMessage({
+                command: 'discord-status',
+                status: 'not-found',
+                message: result.installPath 
+                    ? `Discord is installed but not running. Please open it and try again.`
+                    : `Discord not found. Please install Discord and open it.`,
+                details: result.details,
+                installed: !!result.installPath
+            });
+        }
     }
 
     private async browseSDK(): Promise<void> {
@@ -229,6 +255,11 @@ export class SetupWizard {
             // Update Step 5 verification status now that SDK is saved
             this.diagnostics.logSetupProgress(2, 'Triggering verification update after SDK save');
             await this.updateVerificationStatus();
+            
+            // Auto-advance to next step after SDK is saved
+            console.log(`✅ [browseSDK] SDK successfully saved. Auto-advancing to next step...`);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for UI update
+            await this.nextStep();
         } else {
             // Show validation errors
             const errorMsg = validation.errors.join('\n');
@@ -366,6 +397,13 @@ export class SetupWizard {
                 authenticated: authenticated
             }
         });
+        
+        // Auto-advance to final step when everything is verified
+        if (allValid) {
+            console.log(`✅ [updateVerificationStatus] All checks passed! Auto-advancing to final step...`);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for UI update
+            await this.nextStep();
+        }
     }
 
     private async findDiscord(): Promise<boolean> {
@@ -459,7 +497,7 @@ export class SetupWizard {
             background: rgba(13, 13, 23, 0.4);
             border-radius: 12px;
             border: 2px solid #00ff00;
-            padding: 40px;
+            padding: 25px;
             box-shadow: 0 0 40px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.05);
             position: relative;
             z-index: 100;
@@ -477,7 +515,7 @@ export class SetupWizard {
 
         .header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -485,15 +523,15 @@ export class SetupWizard {
 }
 
         .logo {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 20px;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
             background: transparent;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            font-size: 50px;
             position: relative;
             animation: portalFloat 3s ease-in-out infinite;
         }
@@ -526,7 +564,7 @@ export class SetupWizard {
         .steps {
             display: flex;
             justify-content: space-between;
-            margin: 30px 0;
+            margin: 15px 0;
             padding: 0 10px;
         }
 
@@ -589,8 +627,8 @@ export class SetupWizard {
         }
 
         .content {
-            min-height: 200px;
-            margin: 30px 0;
+            min-height: 100px;
+            margin: 15px 0;
         }
 
         .step {
@@ -609,7 +647,7 @@ export class SetupWizard {
 
         .step h2 {
             color: #00ff00;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-size: 1.5em;
             text-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
         }
@@ -683,6 +721,7 @@ export class SetupWizard {
             color: #00ff00;
             border-color: #00ff00;
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+            margin-top: 10px;
         }
 
         .btn-primary:hover {
@@ -704,7 +743,7 @@ export class SetupWizard {
             height: 4px;
             background: rgba(0, 136, 255, 0.2);
             border-radius: 2px;
-            margin-top: 20px;
+            margin-top: 15px;
             overflow: hidden;
             box-shadow: 0 0 10px rgba(0, 136, 255, 0.3);
         }
@@ -719,11 +758,11 @@ export class SetupWizard {
 
         .details {
             background: rgba(0, 136, 255, 0.08);
-            padding: 15px;
+            padding: 10px;
             border-radius: 6px;
             color: #00ff00;
             font-size: 0.9em;
-            margin-top: 15px;
+            margin-top: 10px;
             border: 1px solid #0088ff;
             box-shadow: 0 0 10px rgba(0, 136, 255, 0.2);
         }
@@ -811,17 +850,17 @@ export class SetupWizard {
 
             <!-- Step 1: Discord Check -->
             <div class="step">
-                <h2>📱 Open Discord</h2>
+                <h2>� Open Discord</h2>
                 <p>We need your Discord desktop app running for authentication.</p>
-                <div class="status">
-                    <span class="status-icon">📌</span>
-                    <span>Open Discord desktop app on your computer</span>
+                <div class="status" id="discord-check-status">
+                    <span class="status-icon">⚠️</span>
+                    <span><strong>Make sure Discord is fully running</strong></span>
                 </div>
-                <div class="details">
-                    Make sure Discord is fully loaded and you're logged in. Then click the button below to continue.
+                <div class="details" id="discord-check-details" style="background: rgba(255, 200, 0, 0.1); border: 1px solid #ffc800; margin-top: 15px;">
+                    Discord must be completely open and fully loaded before proceeding. Click the button below to verify, or proceed manually.
                 </div>
-                <button class="btn-primary" onclick="vscode.postMessage({command: 'next-step'})" style="width: 100%; margin-top: 20px;">
-                    ✓ Discord is open
+                <button class="btn-primary" onclick="vscode.postMessage({command: 'detect-discord'})" style="width: 100%; margin-top: 20px;">
+                    🔍 Check for Discord (scans running processes - optional)
                 </button>
             </div>
 
