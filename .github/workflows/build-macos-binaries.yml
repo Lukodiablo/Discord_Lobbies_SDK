@@ -1,0 +1,105 @@
+name: Build macOS Binaries
+
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    paths:
+      - 'rust-native/**'
+      - '.github/workflows/build-macos-binaries.yml'
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install macOS target (${{ matrix.arch }})
+        run: |
+          rustup target add \
+            x86_64-apple-darwin \
+            aarch64-apple-darwin
+      
+      - name: Build Rust binary for macOS (${{ matrix.arch }})
+        working-directory: rust-native
+        run: |
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            cargo build --release --target x86_64-apple-darwin
+          else
+            cargo build --release --target aarch64-apple-darwin
+          fi
+      
+      - name: Prepare artifacts
+        run: |
+          ARCH=${{ matrix.arch }}
+          mkdir -p macos-binaries/$ARCH
+          
+          if [ "$ARCH" = "x86_64" ]; then
+            cp rust-native/target/x86_64-apple-darwin/release/lobbies-sdk macos-binaries/$ARCH/
+          else
+            cp rust-native/target/aarch64-apple-darwin/release/lobbies-sdk macos-binaries/$ARCH/
+          fi
+          
+          # Also copy the DLL/dylib if present
+          find rust-native/target -name "discord_social_sdk_rust.*" -type f | xargs -I {} cp {} macos-binaries/$ARCH/ 2>/dev/null || true
+      
+      - name: Upload macOS binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-binaries-${{ matrix.arch }}
+          path: macos-binaries/${{ matrix.arch }}/
+          retention-days: 30
+  
+  create-release:
+    needs: build-macos
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-binaries
+      
+      - name: Create release note
+        run: |
+          cat > MACOS_BUILD_INSTRUCTIONS.md << 'EOF'
+          # macOS Binaries Built Successfully
+          
+          Built for:
+          - x86_64 (Intel Macs)
+          - aarch64 (Apple Silicon Macs)
+          
+          ## Installation Instructions
+          
+          1. Download the binaries from the artifacts
+          2. Copy to your rust-native/target directory:
+             ```
+             cp -r macos-binaries/x86_64/* rust-native/target/x86_64-apple-darwin/release/
+             cp -r macos-binaries/aarch64/* rust-native/target/aarch64-apple-darwin/release/
+             ```
+          3. Rebuild the VSIX:
+             ```
+             npm run vscode:prepublish
+             npx vsce package
+             ```
+          EOF
+          cat MACOS_BUILD_INSTRUCTIONS.md
+      
+      - name: List all artifacts
+        run: |
+          echo "=== All Built Artifacts ===" 
+          find all-binaries -type f | sort

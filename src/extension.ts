@@ -83,12 +83,9 @@ async function getDiscordConfig(): Promise<{ applicationId: string; clientId: st
   const vercelUrl = process.env.VERCEL_BACKEND ? `${process.env.VERCEL_BACKEND}/config` : '';
   
   if (!vercelUrl) {
-    console.warn('⚠️  VERCEL_BACKEND not set - using fallback config');
-    return {
-      applicationId: '1223325203968860261',
-      clientId: '1223325203968860261',
-      redirectUri: 'http://localhost:3000/oauth/callback'
-    };
+    const error = '❌ VERCEL_BACKEND environment variable not set - cannot proceed with OAuth. All configuration must come from Vercel backend.';
+    console.error(error);
+    throw new Error(error);
   }
   
   console.log('🌐 Fetching config from:', vercelUrl);
@@ -125,14 +122,9 @@ async function getDiscordConfig(): Promise<{ applicationId: string; clientId: st
       redirectUri: config.redirectUri,
     };
   } catch (error: any) {
-    console.error('❌ Failed to fetch config:', error.message);
-    console.warn('⚠️  Using fallback config');
-    // Use fallback hardcoded config instead of crashing
-    return {
-      applicationId: '1223325203968860261',
-      clientId: '1223325203968860261',
-      redirectUri: 'http://localhost:3000/oauth/callback'
-    };
+    const msg = error.message || String(error);
+    console.error('❌ Failed to fetch config from Vercel:', msg);
+    throw new Error(`Cannot initialize extension without Vercel backend configuration: ${msg}`);
   }
 }
 
