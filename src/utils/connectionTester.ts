@@ -7,6 +7,11 @@ import { DiagnosticsPanel } from './diagnosticsPanel';
  */
 export class ConnectionTester {
     private diagnostics = DiagnosticsPanel.getInstance();
+    private context: vscode.ExtensionContext;
+
+    constructor(context: vscode.ExtensionContext) {
+        this.context = context;
+    }
 
     /**
      * Run full end-to-end test
@@ -44,14 +49,15 @@ export class ConnectionTester {
     }
 
     /**
-     * Test SDK configuration
+     * Test SDK configuration - reads from VS Code secrets like the extension does
      */
     private async testSDKConfiguration(): Promise<boolean> {
         try {
-            const sdkPath = process.env.DISCORD_SDK_PATH;
+            // Read from secrets (same as wizard/extension) instead of env var
+            const sdkPath = await this.context.secrets.get('discord-sdk-path');
             
             if (!sdkPath) {
-                this.diagnostics.logWarning('SDK Test', 'DISCORD_SDK_PATH not set');
+                this.diagnostics.logWarning('SDK Test', 'SDK path not configured in extension settings');
                 return false;
             }
 

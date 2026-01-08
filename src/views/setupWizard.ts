@@ -316,7 +316,17 @@ export class SetupWizard {
         }
         
         // Check authentication - verify an actual token exists in secrets
-        const authTokenStr = await this.context.secrets.get('discord-token');
+        // Extended timeout for system keyring operations in packaged VSIX (up to 15 seconds)
+        let authTokenStr: string | undefined;
+        for (let i = 0; i < 150; i++) { // Try for up to 15 seconds (150 * 100ms)
+            await new Promise(resolve => setTimeout(resolve, 100));
+            authTokenStr = await this.context.secrets.get('discord-token');
+            if (authTokenStr) {
+                console.log(`🟡 [updateVerificationStatus] Token found after ${i * 100 + 100}ms`);
+                break;
+            }
+        }
+        
         let authenticated = false;
         
         console.log(`🟡 [updateVerificationStatus] Auth token from secrets: ${authTokenStr ? 'FOUND' : 'NOT FOUND'}`);

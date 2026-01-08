@@ -4,6 +4,9 @@ dist/
 build/
 
 # Rust
+# Allow compiled binaries to be tracked
+!rust-native/target/release/lobbies-sdk
+!rust-native/target/x86_64-pc-windows-msvc/release/lobbies-sdk.exe
 rust-native/target/
 # EXCEPT: Keep compiled binaries for all platforms (distribution)
 !rust-native/target/release/lobbies-sdk*

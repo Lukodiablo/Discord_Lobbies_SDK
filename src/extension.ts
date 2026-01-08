@@ -543,7 +543,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Test connection command (for debugging)
     context.subscriptions.push(
       vscode.commands.registerCommand('discord-vscode.testConnection', async () => {
-        const tester = new ConnectionTester();
+        const tester = new ConnectionTester(context);
         const result = await tester.runFullTest();
         
         if (result.success) {
