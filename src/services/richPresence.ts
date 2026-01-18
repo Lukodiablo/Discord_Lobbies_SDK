@@ -22,6 +22,8 @@ export class RichPresenceManager {
 	private presenceUpdateTimer: NodeJS.Timeout | null = null;
 	private updateDebounceTimer: NodeJS.Timeout | null = null;
 	private activityStartTime: number = Math.floor(Date.now() / 1000);
+	private rpcConnectAttempts: number = 0;
+	private maxRpcConnectAttempts: number = 30; // Try for up to 30 seconds (1 second intervals)
 
 	constructor(context: vscode.ExtensionContext) {
 		this.context = context;
@@ -257,16 +259,36 @@ export class RichPresenceManager {
 
 	/**
 	 * Set the Discord Rich Presence
-	 * Sends presence to Discord RPC client
+	 * Sends presence to Discord RPC client with retry logic
 	 */
 	private async setPresence(presence: any): Promise<void> {
 		try {
 			// Get RPC client from extension context
 			const rpcClient = getDiscordRPCClient();
 			
-			if (!rpcClient || !rpcClient.isConnectedToRPC()) {
+			if (!rpcClient) {
+				console.warn('[RichPresence] ⚠️ RPC client not initialized - unable to send presence');
 				return;
 			}
+
+			if (!rpcClient.isConnectedToRPC()) {
+				// RPC not connected yet - queue retry
+				this.rpcConnectAttempts++;
+				if (this.rpcConnectAttempts <= this.maxRpcConnectAttempts) {
+					console.warn(`[RichPresence] ⏳ RPC not connected yet (attempt ${this.rpcConnectAttempts}/${this.maxRpcConnectAttempts}) - retrying in 1s...`);
+					// Retry in 1 second
+					setTimeout(() => {
+						this.updatePresence();
+					}, 1000);
+				} else {
+					console.error('[RichPresence] ❌ RPC connection timeout after', this.maxRpcConnectAttempts, 'attempts - Discord app may not be running');
+					this.rpcConnectAttempts = 0;
+				}
+				return;
+			}
+
+			// Reset attempt counter on successful connection
+			this.rpcConnectAttempts = 0;
 
 			// Convert presence to Discord RPC format
 			const activityData: any = {
@@ -295,8 +317,10 @@ export class RichPresenceManager {
 				activity: activityData
 			});
 
+			console.log('[RichPresence] ✅ Presence sent to Discord successfully');
+
 		} catch (error) {
-			console.error('[RichPresence] Failed to send presence:', (error as Error).message);
+			console.error('[RichPresence] ❌ Failed to send presence:', (error as Error).message);
 			// Fall back to logging
 			console.log('[RichPresence] 📡 Presence object (not sent):', {
 				state: presence.state,

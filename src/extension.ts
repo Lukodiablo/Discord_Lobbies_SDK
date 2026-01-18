@@ -331,6 +331,28 @@ export async function activate(context: vscode.ExtensionContext) {
     authManager = new DiscordAuthManager(context);
     richPresenceManager = new RichPresenceManager(context);
     sdkAdapterInstance = DiscordSDKAdapter.getInstance();
+
+    // Initialize RPC Client early so Rich Presence can use it
+    // (Rich Presence is already initialized above, but RPC will be null until we create it)
+    try {
+      const tokenObj = await authManager.getStoredToken();
+      if (tokenObj?.accessToken) {
+        const appId = process.env.DISCORD_APP_ID;
+        if (appId) {
+          console.log('🔌 Initializing Discord RPC client for Rich Presence early...');
+          rpcClient = new DiscordRPCClient(appId, tokenObj.accessToken);
+          
+          // Attempt to connect to Discord app (fire and forget)
+          rpcClient.connect().then(() => {
+            console.log('✅ Discord RPC client connected early - Rich Presence is ready');
+          }).catch((error: Error) => {
+            console.warn('⚠️  RPC connection failed (Discord app may not be running):', error.message);
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️  Could not initialize RPC client early:', error);
+    }
     
     // Initialize tree and webview providers
     serverTreeProvider = new ServerTreeProvider();
@@ -1238,25 +1260,8 @@ export async function activate(context: vscode.ExtensionContext) {
           await context.secrets.store('discord-prev-token', currentToken);
         }
 
-        // Initialize RPC Client for Rich Presence (requires valid token)
-        if (tokenObj && tokenObj.accessToken) {
-          try {
-            console.log('🔌 Initializing Discord RPC client for Rich Presence...');
-            rpcClient = new DiscordRPCClient(appId, tokenObj.accessToken);
-            
-            // Attempt to connect to Discord app
-            rpcClient.connect().then(() => {
-              console.log('✅ Discord RPC client connected - Rich Presence is ready');
-            }).catch((error: Error) => {
-              console.warn('⚠️  RPC connection failed (Discord app may not be running):', error.message);
-              // This is not critical - will try to connect when Discord app starts
-            });
-          } catch (error) {
-            console.error('❌ Failed to initialize RPC client:', error);
-          }
-        } else {
-          console.log('⚠️  No token available - RPC client will not be initialized');
-        }
+        // Note: RPC Client is now initialized early (before Discord Client connection)
+        // No need to re-initialize it here
         
         // Listen for OAuth token data and store it properly
         // Handler already registered above before connecting
