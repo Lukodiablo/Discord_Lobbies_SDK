@@ -55,6 +55,15 @@ export class DiscordSDKAdapter extends EventEmitter {
     private friendListCache: any[] | null = null;
     private lastFriendFetch: number = 0;
     private FRIEND_CACHE_TTL: number = 10000; // 10 second cache
+    
+    // MEMBER TRACKING: Track who's in lobbies and voice
+    private lobbyMembers: Map<string, Set<string>> = new Map(); // lobbyId -> Set<userId>
+    private voiceParticipants: Set<string> = new Set(); // userId set for current voice
+    private currentLobbyId: string | null = null;
+    private currentVoiceUserId: string | null = null;
+    private generalLobbyMembers: Map<string, Set<string>> = new Map(); // lobbyId -> Set<userId> (not in voice)
+    private micEnabled: boolean = true;
+    private audioEnabled: boolean = true;
 
     private constructor() {
         super();
@@ -618,10 +627,6 @@ export class DiscordSDKAdapter extends EventEmitter {
         throw new Error('inviteToLobby not yet implemented');
     }
 
-    async getLobbyMembers(lobbyId: string): Promise<any[]> {
-        throw new Error('getLobbyMembers not yet implemented');
-    }
-
     async connectLobbyVoice(lobbyId: string): Promise<void> {
         if (!this.isReady() || !this.subprocess) {
             throw new Error('SDK not ready');
@@ -728,6 +733,151 @@ export class DiscordSDKAdapter extends EventEmitter {
             console.error('[DiscordSDKAdapter] Disconnect error:', error);
             throw error;
         }
+    }
+
+    /**
+     * Track user joining lobby (not voice, just lobby)
+     */
+    addLobbyMember(lobbyId: string, userId: string, username: string): void {
+        if (!this.generalLobbyMembers.has(lobbyId)) {
+            this.generalLobbyMembers.set(lobbyId, new Set());
+        }
+        this.generalLobbyMembers.get(lobbyId)!.add(userId);
+        this.userNameCache.set(userId, username);
+        this.currentLobbyId = lobbyId;
+        console.log(`[DiscordSDKAdapter] User joined lobby: ${username} (${userId})`);
+        this.emit('lobbyMemberJoined', { lobbyId, userId, username });
+    }
+
+    /**
+     * Track user leaving lobby
+     */
+    removeLobbyMember(lobbyId: string, userId: string): void {
+        if (this.generalLobbyMembers.has(lobbyId)) {
+            this.generalLobbyMembers.get(lobbyId)!.delete(userId);
+            if (this.generalLobbyMembers.get(lobbyId)!.size === 0) {
+                this.generalLobbyMembers.delete(lobbyId);
+            }
+        }
+        console.log(`[DiscordSDKAdapter] User left lobby: ${userId}`);
+        this.emit('lobbyMemberLeft', { lobbyId, userId });
+    }
+
+    /**
+     * Get general lobby members (not in voice)
+     */
+    getLobbyMembers(lobbyId: string): Array<{ userId: string; username: string }> {
+        if (!this.generalLobbyMembers.has(lobbyId)) {
+            return [];
+        }
+        const members = Array.from(this.generalLobbyMembers.get(lobbyId)!).map(userId => ({
+            userId,
+            username: this.userNameCache.get(userId) || `User ${userId.substring(0, 8)}`
+        }));
+        return members;
+    }
+
+    /**
+     * Set mic enabled status
+     */
+    setMicEnabled(enabled: boolean): void {
+        this.micEnabled = enabled;
+        console.log(`[DiscordSDKAdapter] Mic ${enabled ? 'enabled' : 'disabled'}`);
+        this.emit('micStatusChanged', { enabled });
+    }
+
+    /**
+     * Get mic enabled status
+     */
+    isMicEnabled(): boolean {
+        return this.micEnabled;
+    }
+
+    /**
+     * Set audio enabled status
+     */
+    setAudioEnabled(enabled: boolean): void {
+        this.audioEnabled = enabled;
+        console.log(`[DiscordSDKAdapter] Audio ${enabled ? 'enabled' : 'disabled'}`);
+        this.emit('audioStatusChanged', { enabled });
+    }
+
+    /**
+     * Get audio enabled status
+     */
+    isAudioEnabled(): boolean {
+        return this.audioEnabled;
+    }
+
+    /**
+     * Track user joining lobby voice
+     */
+    addLobbyVoiceMember(lobbyId: string, userId: string, username: string): void {
+        if (!this.lobbyMembers.has(lobbyId)) {
+            this.lobbyMembers.set(lobbyId, new Set());
+        }
+        this.lobbyMembers.get(lobbyId)!.add(userId);
+        this.userNameCache.set(userId, username);
+        this.voiceParticipants.add(userId);
+        this.currentLobbyId = lobbyId;
+        console.log(`[DiscordSDKAdapter] User joined lobby voice: ${username} (${userId})`);
+        console.log(`[DiscordSDKAdapter] Emitting lobbyVoiceMemberJoined event`);
+        this.emit('lobbyVoiceMemberJoined', { lobbyId, userId, username });
+        console.log(`[DiscordSDKAdapter] voiceParticipants count: ${this.voiceParticipants.size}`);
+    }
+
+    /**
+     * Track user leaving lobby voice
+     */
+    removeLobbyVoiceMember(lobbyId: string, userId: string): void {
+        if (this.lobbyMembers.has(lobbyId)) {
+            this.lobbyMembers.get(lobbyId)!.delete(userId);
+            if (this.lobbyMembers.get(lobbyId)!.size === 0) {
+                this.lobbyMembers.delete(lobbyId);
+            }
+        }
+        this.voiceParticipants.delete(userId);
+        console.log(`[DiscordSDKAdapter] User left lobby voice: ${userId}`);
+        this.emit('lobbyVoiceMemberLeft', { lobbyId, userId });
+    }
+
+    /**
+     * Get current lobby voice members
+     */
+    getLobbyVoiceMembers(lobbyId: string): Array<{ userId: string; username: string }> {
+        if (!this.lobbyMembers.has(lobbyId)) {
+            return [];
+        }
+        const members = Array.from(this.lobbyMembers.get(lobbyId)!).map(userId => ({
+            userId,
+            username: this.userNameCache.get(userId) || `User ${userId.substring(0, 8)}`
+        }));
+        return members;
+    }
+
+    /**
+     * Get all voice participants
+     */
+    getVoiceParticipants(): Array<{ userId: string; username: string }> {
+        return Array.from(this.voiceParticipants).map(userId => ({
+            userId,
+            username: this.userNameCache.get(userId) || `User ${userId.substring(0, 8)}`
+        }));
+    }
+
+    /**
+     * Clear lobby members (when leaving)
+     */
+    clearLobbyMembers(lobbyId: string): void {
+        if (this.lobbyMembers.has(lobbyId)) {
+            const members = this.lobbyMembers.get(lobbyId)!;
+            members.forEach(userId => this.voiceParticipants.delete(userId));
+            this.lobbyMembers.delete(lobbyId);
+        }
+        if (this.currentLobbyId === lobbyId) {
+            this.currentLobbyId = null;
+        }
+        console.log(`[DiscordSDKAdapter] Cleared members for lobby ${lobbyId}`);
     }
 }
 

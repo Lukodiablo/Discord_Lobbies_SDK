@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { getDiscordClient } from '../extension';
 
-export async function toggleMuteLobbyCommand() {
+export async function toggleMuteLobbyCommand(_item?: any) {
   const client = getDiscordClient();
   if (!client || !client.isConnected()) {
     vscode.window.showErrorMessage('Discord not connected.');
@@ -23,7 +23,7 @@ export async function toggleMuteLobbyCommand() {
   }
 }
 
-export async function toggleDeafLobbyCommand() {
+export async function toggleDeafLobbyCommand(_item?: any) {
   const client = getDiscordClient();
   if (!client || !client.isConnected()) {
     vscode.window.showErrorMessage('Discord not connected.');

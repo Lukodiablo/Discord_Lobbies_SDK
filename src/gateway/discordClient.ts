@@ -37,6 +37,24 @@ export class DiscordClient extends EventEmitter {
 			this.connected = true;
 			console.log('✅ SDK connected');
 
+			// Forward SDK adapter events
+			sdkAdapter.on('micStatusChanged', (data) => {
+				console.log('[DiscordClient] Forwarding micStatusChanged to micEnabled');
+				this.emit('micEnabled', data);
+			});
+			sdkAdapter.on('audioStatusChanged', (data) => {
+				console.log('[DiscordClient] Forwarding audioStatusChanged to audioEnabled');
+				this.emit('audioEnabled', data);
+			});
+			sdkAdapter.on('lobbyVoiceMemberJoined', (data) => {
+				console.log('[DiscordClient] Forwarding lobbyVoiceMemberJoined to voiceStateUpdate', data);
+				this.emit('voiceStateUpdate', data);
+			});
+			sdkAdapter.on('lobbyVoiceMemberLeft', (data) => {
+				console.log('[DiscordClient] Forwarding lobbyVoiceMemberLeft to voiceStateUpdate', data);
+				this.emit('voiceStateUpdate', data);
+			});
+
 			// Current user data would be fetched through separate API call if needed
 			// For now, we have the user from OAuth token decode
 
@@ -121,6 +139,83 @@ export class DiscordClient extends EventEmitter {
 		return await sdkAdapter.getLobbyMembers(lobbyId);
 	}
 
+	/**
+	 * Add general lobby member (not voice)
+	 */
+	addLobbyMember(lobbyId: string, userId: string, username: string): void {
+		return sdkAdapter.addLobbyMember(lobbyId, userId, username);
+	}
+
+	/**
+	 * Remove general lobby member
+	 */
+	removeLobbyMember(lobbyId: string, userId: string): void {
+		return sdkAdapter.removeLobbyMember(lobbyId, userId);
+	}
+
+	/**
+	 * Add member to lobby voice tracking
+	 */
+	addLobbyVoiceMember(lobbyId: string, userId: string, username: string): void {
+		return sdkAdapter.addLobbyVoiceMember(lobbyId, userId, username);
+	}
+
+	/**
+	 * Remove member from lobby voice tracking
+	 */
+	removeLobbyVoiceMember(lobbyId: string, userId: string): void {
+		return sdkAdapter.removeLobbyVoiceMember(lobbyId, userId);
+	}
+
+	/**
+	 * Get current lobby voice members
+	 */
+	getLobbyVoiceMembers(lobbyId: string): Array<{ userId: string; username: string }> {
+		return sdkAdapter.getLobbyVoiceMembers(lobbyId);
+	}
+
+	/**
+	 * Get all voice participants
+	 */
+	getVoiceParticipants(): Array<{ userId: string; username: string }> {
+		return sdkAdapter.getVoiceParticipants();
+	}
+
+	/**
+	 * Set mic enabled status
+	 */
+	setMicEnabled(enabled: boolean): void {
+		return sdkAdapter.setMicEnabled(enabled);
+	}
+
+	/**
+	 * Get mic enabled status
+	 */
+	isMicEnabled(): boolean {
+		return sdkAdapter.isMicEnabled();
+	}
+
+	/**
+	 * Set audio enabled status
+	 */
+	setAudioEnabled(enabled: boolean): void {
+		return sdkAdapter.setAudioEnabled(enabled);
+	}
+
+	/**
+	 * Get audio enabled status
+	 */
+	isAudioEnabled(): boolean {
+		return sdkAdapter.isAudioEnabled();
+	}
+
+	/**
+	 * Clear lobby members
+	 */
+	clearLobbyMembers(lobbyId: string): void {
+		return sdkAdapter.clearLobbyMembers(lobbyId);
+	}
+
 	async connectLobbyVoice(lobbyId: string): Promise<void> {
 		return await sdkAdapter.connectLobbyVoice(lobbyId);
 	}
@@ -156,6 +251,11 @@ export class DiscordClient extends EventEmitter {
 
 	getCurrentUser(): any {
 		return this.currentUser;
+	}
+
+	setCurrentUser(user: any): void {
+		this.currentUser = user;
+		console.log(`[DiscordClient] Current user set: ${user?.username} (${user?.id})`);
 	}
 
 	async getMessageEvents(): Promise<any[]> {

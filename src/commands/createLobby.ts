@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getDiscordClient, getContext } from '../extension';
+import { getDiscordClient, getContext, getRichPresenceManager } from '../extension';
 import { sdkAdapter } from '../services/discordSDKSubprocess';
 import { registerLobby } from '../services/relayAPI';
 import { updateRelayPollerLobbies } from '../services/relayMessagePoller';
@@ -55,6 +55,12 @@ export async function createLobbyCommand() {
                 title,
                 description
             });
+            
+            // Update rich presence with lobby info
+            const richPresenceManager = getRichPresenceManager();
+            if (richPresenceManager) {
+                richPresenceManager.setLobbyInfo({ id: lobbyId, name: title });
+            }
             
             // Register lobby with relay API so we receive messages
             const extensionId = vscode.extensions.getExtension('lobbies-sdk')?.id || 'unknown';

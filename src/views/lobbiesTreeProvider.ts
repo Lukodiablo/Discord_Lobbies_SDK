@@ -88,6 +88,22 @@ export class LobbiesTreeProvider implements vscode.TreeDataProvider<LobbyItem> {
       console.log('🔄 Discord Client READY: Refreshing LobbiesTreeProvider');
       this.refresh();
     });
+
+    // Listen for voice state changes to update tree
+    client.on('voiceStateUpdate', () => {
+      console.log('[LobbiesTreeProvider] Voice state changed - refreshing tree');
+      this.refresh();
+    });
+
+    client.on('micEnabled', () => {
+      console.log('[LobbiesTreeProvider] Mic state changed - refreshing tree');
+      this.refresh();
+    });
+
+    client.on('audioEnabled', () => {
+      console.log('[LobbiesTreeProvider] Audio state changed - refreshing tree');
+      this.refresh();
+    });
   }
 
   public refresh(): void {
@@ -222,9 +238,10 @@ export class LobbiesTreeProvider implements vscode.TreeDataProvider<LobbyItem> {
     }
 
     // Show members for selected lobby
+    // Show members for selected lobby
     if (element.type === 'lobby') {
       // Show quick actions for the lobby
-      return Promise.resolve([
+      const items: LobbyItem[] = [
         new LobbyItem(
           '💬 Send Message',
           element.lobbyId,
@@ -232,42 +249,65 @@ export class LobbiesTreeProvider implements vscode.TreeDataProvider<LobbyItem> {
           vscode.TreeItemCollapsibleState.None
         ),
         new LobbyItem(
-          '� Share Code',
+          '📤 Share Code',
           element.lobbyId,
           'share_code',
           vscode.TreeItemCollapsibleState.None
         ),
+      ];
+
+      // Check if user is in voice
+      const voiceMembers = this.discordClient?.getVoiceParticipants() || [];
+      const inVoice = voiceMembers.length > 0;
+
+      if (inVoice) {
+        // Show voice controls when IN voice
+        const micEnabled = this.discordClient?.isMicEnabled() ?? true;
+        const audioEnabled = this.discordClient?.isAudioEnabled() ?? true;
+        
+        items.push(
+          new LobbyItem(
+            `🎤 ${micEnabled ? 'Mute' : 'Unmute'} Microphone`,
+            element.lobbyId,
+            'toggle_mute',
+            vscode.TreeItemCollapsibleState.None
+          ),
+          new LobbyItem(
+            `🔊 ${audioEnabled ? 'Deafen' : 'Undeafen'} Audio`,
+            element.lobbyId,
+            'toggle_deaf',
+            vscode.TreeItemCollapsibleState.None
+          ),
+          new LobbyItem(
+            '📴 Leave Voice',
+            element.lobbyId,
+            'disconnect_voice',
+            vscode.TreeItemCollapsibleState.None
+          )
+        );
+      } else {
+        // Show join voice when NOT in voice
+        items.push(
+          new LobbyItem(
+            '📞 Connect Voice',
+            element.lobbyId,
+            'connect_voice',
+            vscode.TreeItemCollapsibleState.None
+          )
+        );
+      }
+
+      // Always show leave lobby at the bottom
+      items.push(
         new LobbyItem(
-          '📞 Connect Voice',
-          element.lobbyId,
-          'connect_voice',
-          vscode.TreeItemCollapsibleState.None
-        ),
-        new LobbyItem(
-          '📴 Leave Voice',
-          element.lobbyId,
-          'disconnect_voice',
-          vscode.TreeItemCollapsibleState.None
-        ),
-        new LobbyItem(
-          '🎤 Toggle Microphone',
-          element.lobbyId,
-          'toggle_mute',
-          vscode.TreeItemCollapsibleState.None
-        ),
-        new LobbyItem(
-          '🔊 Toggle Audio',
-          element.lobbyId,
-          'toggle_deaf',
-          vscode.TreeItemCollapsibleState.None
-        ),
-        new LobbyItem(
-          '�👋 Leave Lobby',
+          '👋 Leave Lobby',
           element.lobbyId,
           'leave',
           vscode.TreeItemCollapsibleState.None
-        ),
-      ]);
+        )
+      );
+
+      return Promise.resolve(items);
     }
 
     return Promise.resolve([]);

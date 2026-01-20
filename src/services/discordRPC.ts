@@ -186,6 +186,7 @@ export class DiscordRPCClient {
 	private nonce: number = 0;
 	private listeners: Map<string, ((data: any) => void)[]> = new Map();
 	private receiveBuffer: Buffer = Buffer.alloc(0);
+	private heartbeatTimer: NodeJS.Timeout | null = null; // HEARTBEAT TIMER
 
 	// Data storage
 	public guilds: Map<string, any> = new Map();
@@ -274,6 +275,9 @@ export class DiscordRPCClient {
 				console.log('🔐 Handshake successful, authenticating...');
 				this.isConnected = true;
 
+				// Start heartbeat
+				this.startHeartbeat();
+
 				// Authenticate immediately after handshake
 				this.authenticate()
 					.then(() => {
@@ -293,6 +297,14 @@ export class DiscordRPCClient {
 				if (data.evt) {
 					this.emit(data.evt, data);
 				}
+			}
+
+			// Handle PING from Discord (respond with PONG)
+			if (op === OPCODES.PING) {
+				console.log('💓 Received PING, sending PONG');
+				this.sendFrame(OPCODES.PONG, {}).catch(err => 
+					console.error('Failed to send PONG:', err)
+				);
 			}
 		}
 	}
@@ -322,12 +334,7 @@ export class DiscordRPCClient {
 			const nonce = String(this.nonce++);
 			const payload = { cmd, args, nonce };
 
-			// Wait for response with this nonce
-			const timeout = setTimeout(() => {
-				this.removeListener(nonce, handler);
-				reject(new Error(`RPC timeout: ${cmd}`));
-			}, 3000);
-
+			// Define handler BEFORE timeout so it's always available
 			const handler = (data: any) => {
 				clearTimeout(timeout);
 				this.removeListener(nonce, handler);
@@ -342,6 +349,12 @@ export class DiscordRPCClient {
 					resolve(data);
 				}
 			};
+
+			// Wait for response with this nonce
+			const timeout = setTimeout(() => {
+				this.removeListener(nonce, handler);
+				reject(new Error(`RPC timeout: ${cmd}`));
+			}, 3000);
 
 			this.on(nonce, handler);
 
@@ -581,7 +594,40 @@ export class DiscordRPCClient {
 		return this.channels.get(channelId);
 	}
 
+	/**
+	 * Start heartbeat timer to keep connection alive
+	 * Discord requires heartbeat every ~30 seconds or disconnects after 45 seconds
+	 */
+	private startHeartbeat(): void {
+		if (this.heartbeatTimer) {
+			clearInterval(this.heartbeatTimer);
+		}
+		
+		// Send heartbeat every 30 seconds
+		this.heartbeatTimer = setInterval(() => {
+			if (this.socket && this.isConnected) {
+				this.sendFrame(OPCODES.PING, {}).catch(err => 
+					console.warn('Failed to send heartbeat PING:', err)
+				);
+			}
+		}, 30000);
+
+		console.log('💓 Heartbeat started (every 30 seconds)');
+	}
+
+	/**
+	 * Stop heartbeat timer on disconnect
+	 */
+	private stopHeartbeat(): void {
+		if (this.heartbeatTimer) {
+			clearInterval(this.heartbeatTimer);
+			this.heartbeatTimer = null;
+			console.log('💓 Heartbeat stopped');
+		}
+	}
+
 	disconnect(): void {
+		this.stopHeartbeat();
 		if (this.socket) {
 			this.socket.destroy();
 			this.socket = null;

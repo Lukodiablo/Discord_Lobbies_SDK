@@ -31,11 +31,8 @@ export class VoiceChannelsWebviewProvider implements vscode.WebviewViewProvider 
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
-        case 'joinVoice':
-          await this._joinVoice(data.channelId);
-          break;
-        case 'leaveVoice':
-          await this._leaveVoice();
+        case 'toggleVoice':
+          await this._toggleVoice(data.channelId);
           break;
         case 'listChannels':
           await this._listChannels();
@@ -67,6 +64,9 @@ export class VoiceChannelsWebviewProvider implements vscode.WebviewViewProvider 
         type: 'voiceChannelsUpdate',
         channels: [],
         connected: false,
+        lobbyMembers: [],
+        voiceMembers: [],
+        inVoice: false
       });
       return;
     }
@@ -95,9 +95,23 @@ export class VoiceChannelsWebviewProvider implements vscode.WebviewViewProvider 
         }
       }
 
+      // Get current lobby members and voice members from tracking
+      const context = this._context.workspaceState;
+      const currentLobby = context.get<any>('currentLobby');
+      const lobbyMembers = currentLobby ? this.discordClient!.getLobbyMembers(currentLobby.id) : [];
+      const voiceMembers = this.discordClient!.getVoiceParticipants();
+      const micEnabled = this.discordClient!.isMicEnabled();
+      const audioEnabled = this.discordClient!.isAudioEnabled();
+      const inVoice = voiceMembers.length > 0; // User is in voice if there are voice participants
+
       this.view?.webview.postMessage({
         type: 'voiceChannelsUpdate',
         channels,
+        lobbyMembers,
+        voiceMembers,
+        micEnabled,
+        audioEnabled,
+        inVoice,
         connected: true,
       });
     } catch (error) {
@@ -105,29 +119,29 @@ export class VoiceChannelsWebviewProvider implements vscode.WebviewViewProvider 
     }
   }
 
-  private async _joinVoice(channelId: string) {
+  private async _toggleVoice(channelId: string) {
     if (!this.discordClient?.isConnected()) {
       vscode.window.showErrorMessage('Not connected to Discord');
       return;
     }
+    
     try {
-      // Voice channel joining is handled through Discord client directly
-      vscode.window.showInformationMessage('Voice channel selected. Join via Discord client.');
+      const voiceMembers = this.discordClient!.getVoiceParticipants();
+      const inVoice = voiceMembers.length > 0;
+      
+      if (inVoice) {
+        // Leave voice
+        await vscode.commands.executeCommand('discord-lobbies.disconnectVoice');
+        vscode.window.showInformationMessage('Left voice channel');
+      } else {
+        // Join voice - use the connectLobbyVoice command
+        await vscode.commands.executeCommand('discord-lobbies.connectVoice');
+        vscode.window.showInformationMessage('Joined voice channel');
+      }
+      
       await this._listChannels();
     } catch (error) {
-      vscode.window.showErrorMessage(`Failed to join: ${error}`);
-    }
-  }
-
-  private async _leaveVoice() {
-    if (!this.discordClient?.isConnected()) {
-      return;
-    }
-    try {
-      vscode.window.showInformationMessage('Leave via Discord client.');
-      await this._listChannels();
-    } catch (error) {
-      console.error('Failed to leave voice:', error);
+      vscode.window.showErrorMessage(`Failed to toggle voice: ${error}`);
     }
   }
 
@@ -196,6 +210,29 @@ export class VoiceChannelsWebviewProvider implements vscode.WebviewViewProvider 
 <body>
   <div class="header"><h2>🎙️ Voice Channels</h2></div>
   <div class="status" id="status">🔌 Connecting...</div>
+  
+  <!-- Voice Status Indicators -->
+  <div id="statusIndicators" style="display: none; margin-bottom: 12px; padding: 8px; background: #2C2F33; border-radius: 4px; display: flex; gap: 8px;">
+    <div id="micIndicator" style="flex: 1; padding: 6px; background: #4CAF50; border-radius: 3px; text-align: center; font-weight: 600; color: white; font-size: 11px;">
+      🎤 ON
+    </div>
+    <div id="audioIndicator" style="flex: 1; padding: 6px; background: #4CAF50; border-radius: 3px; text-align: center; font-weight: 600; color: white; font-size: 11px;">
+      🔊 ON
+    </div>
+  </div>
+  
+  <!-- Lobby Members Section -->
+  <div id="lobbySection" style="display: none; margin-bottom: 15px; padding: 10px; background: #2C2F33; border-radius: 4px;">
+    <div style="font-weight: 600; margin-bottom: 8px;">👥 Lobby Members:</div>
+    <div id="lobbyMembersList" style="font-size: 12px;"></div>
+  </div>
+  
+  <!-- Voice Members Section -->
+  <div id="voiceSection" style="display: none; margin-bottom: 15px; padding: 10px; background: #2C2F33; border-radius: 4px;">
+    <div style="font-weight: 600; margin-bottom: 8px;">🎤 Voice Members:</div>
+    <div id="voiceMembersList" style="font-size: 12px;"></div>
+  </div>
+  
   <div id="channelsList">
     <div class="empty-state">Loading channels...</div>
   </div>
@@ -203,19 +240,22 @@ export class VoiceChannelsWebviewProvider implements vscode.WebviewViewProvider 
   <script>
     const vscode = acquireVsCodeApi();
 
-    function joinVoice(channelId) {
-      vscode.postMessage({ type: 'joinVoice', channelId });
-    }
-
-    function leaveVoice() {
-      vscode.postMessage({ type: 'leaveVoice' });
+    function toggleVoice(channelId) {
+      vscode.postMessage({ type: 'toggleVoice', channelId });
     }
 
     window.addEventListener('message', event => {
-      const { type, channels, connected } = event.data;
+      const { type, channels, connected, lobbyMembers, voiceMembers, micEnabled, audioEnabled, inVoice } = event.data;
       if (type === 'voiceChannelsUpdate') {
         const status = document.getElementById('status');
         const list = document.getElementById('channelsList');
+        const statusIndicators = document.getElementById('statusIndicators');
+        const micIndicator = document.getElementById('micIndicator');
+        const audioIndicator = document.getElementById('audioIndicator');
+        const lobbySection = document.getElementById('lobbySection');
+        const lobbyList = document.getElementById('lobbyMembersList');
+        const voiceSection = document.getElementById('voiceSection');
+        const voiceList = document.getElementById('voiceMembersList');
 
         if (connected) {
           status.className = 'status connected';
@@ -225,11 +265,47 @@ export class VoiceChannelsWebviewProvider implements vscode.WebviewViewProvider 
           status.textContent = '🔴 Disconnected';
         }
 
+        // Display voice status indicators when user is in voice
+        if (inVoice) {
+          statusIndicators.style.display = 'flex';
+          micIndicator.style.background = micEnabled ? '#4CAF50' : '#f44336';
+          micIndicator.textContent = micEnabled ? '🎤 ON' : '🎤 OFF';
+          audioIndicator.style.background = audioEnabled ? '#4CAF50' : '#f44336';
+          audioIndicator.textContent = audioEnabled ? '🔊 ON' : '🔊 OFF';
+        } else {
+          statusIndicators.style.display = 'none';
+        }
+
+        // Display lobby members if any
+        if (lobbyMembers && lobbyMembers.length > 0) {
+          lobbySection.style.display = 'block';
+          let lobbyHtml = '';
+          for (const m of lobbyMembers) {
+            lobbyHtml += '<div style="padding: 4px 0; color: #99AAB5;">👤 ' + m.username + '</div>';
+          }
+          lobbyList.innerHTML = lobbyHtml;
+        } else {
+          lobbySection.style.display = 'none';
+        }
+
+        // Display voice members if any
+        if (voiceMembers && voiceMembers.length > 0) {
+          voiceSection.style.display = 'block';
+          let voiceHtml = '';
+          for (const m of voiceMembers) {
+            voiceHtml += '<div style="padding: 4px 0; color: #99AAB5;">🎤 ' + m.username + '</div>';
+          }
+          voiceList.innerHTML = voiceHtml;
+        } else {
+          voiceSection.style.display = 'none';
+        }
+
         if (!channels || channels.length === 0) {
           list.innerHTML = '<div class="empty-state">No voice channels available</div>';
           return;
         }
 
+        // Show toggle button for each channel
         list.innerHTML = channels.map(ch => \`
           <div class="channel-item">
             <div class="channel-info">
@@ -237,7 +313,7 @@ export class VoiceChannelsWebviewProvider implements vscode.WebviewViewProvider 
               <div class="channel-guild">\${ch.guildName}</div>
               <div class="channel-users">👥 \${ch.users} users</div>
             </div>
-            <button onclick="joinVoice('\${ch.id}')">Join</button>
+            <button onclick="toggleVoice('\${ch.id}')" class="\${inVoice ? 'danger' : ''}">\${inVoice ? 'Leave Voice' : 'Connect Voice'}</button>
           </div>
         \`).join('');
       }
