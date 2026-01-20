@@ -1,0 +1,1 @@
+C:\Users\lukod\Discord_Lobbies_SDK\rust-native\target\release\lobbies-sdk.exe: C:\Users\lukod\Discord_Lobbies_SDK\rust-native\build.rs C:\Users\lukod\Discord_Lobbies_SDK\rust-native\src\lib.rs C:\Users\lukod\Discord_Lobbies_SDK\rust-native\src\main.rs

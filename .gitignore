@@ -3,31 +3,38 @@ node_modules/
 dist/
 build/
 
-# Rust
-# Allow compiled binaries to be tracked
-!rust-native/target/release/lobbies-sdk
-!rust-native/target/x86_64-pc-windows-msvc/release/lobbies-sdk.exe
+# Rust - Ignore build cache but keep binaries
 rust-native/target/
-# EXCEPT: Keep compiled binaries for all platforms (distribution)
-!rust-native/target/release/lobbies-sdk*
+# Keep compiled binaries
+!rust-native/target/release/lobbies-sdk
+!rust-native/target/release/lobbies-sdk.exe
+!rust-native/target/release/discord_social_sdk_rust.dll
+!rust-native/target/x86_64-pc-windows-msvc/
 !rust-native/target/x86_64-pc-windows-msvc/release/lobbies-sdk.exe
-!rust-native/target/aarch64-pc-windows-msvc/release/lobbies-sdk.exe
-!rust-native/target/x86_64-unknown-linux-gnu/release/lobbies-sdk
-!rust-native/target/aarch64-unknown-linux-gnu/release/lobbies-sdk
-!rust-native/target/x86_64-apple-darwin/release/lobbies-sdk
-!rust-native/target/aarch64-apple-darwin/release/lobbies-sdk
+!rust-native/target/x86_64-pc-windows-msvc/release/discord_social_sdk_rust.dll
+!native/build/Release/
 *.rlib
 *.so
 *.dylib
 *.a
+*.pdb
+*.iobj
+*.ipdb
 
 # Discord SDK (large binaries - download separately)
 DiscordSocialSdk-*/
 discord-sdk/
 discord_social_sdk/
 
-# Native addon build artifacts
+# Native addon build artifacts - but keep the compiled binaries
 native/build/
+# Keep compiled binaries
+!native/build/Release/discord_social_sdk.dll
+!native/build/Release/libdiscord_partner_sdk.so
+!native/build/Release/discord_social_sdk.node
+!native/build/Release/*.dll
+!native/build/Release/*.so
+!native/build/Release/*.node
 *.node
 
 # IDE
