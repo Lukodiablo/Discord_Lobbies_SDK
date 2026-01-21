@@ -52,11 +52,17 @@ rust-native/target/release/incremental/
 rust-native/target/release/.fingerprint/
 rust-native/target/release/*.d
 rust-native/target/release/*.rlib
-rust-native/target/release/*.so
-rust-native/target/release/libdiscord*
 rust-native/target/.rustc_info.json
 rust-native/target/CACHEDIR.TAG
 rust-native/target/flycheck0/
+# Linux x86_64 binaries - KEEP executable files
+rust-native/target/x86_64-unknown-linux-gnu/release/build/
+rust-native/target/x86_64-unknown-linux-gnu/release/deps/
+rust-native/target/x86_64-unknown-linux-gnu/release/examples/
+rust-native/target/x86_64-unknown-linux-gnu/release/incremental/
+rust-native/target/x86_64-unknown-linux-gnu/release/.fingerprint/
+rust-native/target/x86_64-unknown-linux-gnu/release/*.d
+rust-native/target/x86_64-unknown-linux-gnu/release/*.rlib
 # Windows binaries - KEEP executable and DLL files, exclude build artifacts
 rust-native/target/x86_64-pc-windows-msvc/release/build/
 rust-native/target/x86_64-pc-windows-msvc/release/deps/
@@ -136,6 +142,8 @@ package-lock.json
 # EXCLUDE: User-provided SDK (not part of extension)
 # ============================================================================
 discord_social_sdk/
+DiscordSocialSdk-*/
+discord-sdk/
 
 # ============================================================================
 # EXCLUDE: Testing and temp files

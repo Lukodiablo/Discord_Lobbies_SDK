@@ -38,11 +38,18 @@ if [ "$CLEAN_BUILD" = true ]; then
     rm -rf native/node_modules 2>/dev/null || true
     rm -rf rust-native/node_modules 2>/dev/null || true
     
-    # Clean build artifacts
+    # Clean build artifacts (but PRESERVE binaries in release directories!)
     echo "  • Cleaning build artifacts..."
     rm -rf dist 2>/dev/null || true
     rm -rf native/build 2>/dev/null || true
-    rm -rf rust-native/target 2>/dev/null || true
+    # Only delete specific Rust build cache, PRESERVE all target/*/release/ binaries
+    cd rust-native
+    rm -rf target/debug 2>/dev/null || true
+    # Delete only build artifacts in release dirs, keep the binaries themselves
+    find target -type d \( -name "build" -o -name "deps" -o -name ".fingerprint" -o -name "incremental" \) -exec rm -rf {} + 2>/dev/null || true
+    # Delete artifact files but NOT the executables
+    find target -type f \( -name "*.d" -o -name "*.rlib" -o -name "*.pdb" \) -delete 2>/dev/null || true
+    cd ..
     
     echo "✅ Cache cleaned"
     echo ""

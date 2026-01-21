@@ -3,15 +3,41 @@ node_modules/
 dist/
 build/
 
-# Rust - Ignore build cache but keep binaries
+# Rust - Ignore build cache but keep binaries for ALL platforms
 rust-native/target/
-# Keep compiled binaries
+# Keep compiled binaries - Windows x86_64
 !rust-native/target/release/lobbies-sdk
 !rust-native/target/release/lobbies-sdk.exe
 !rust-native/target/release/discord_social_sdk_rust.dll
 !rust-native/target/x86_64-pc-windows-msvc/
+!rust-native/target/x86_64-pc-windows-msvc/release/
 !rust-native/target/x86_64-pc-windows-msvc/release/lobbies-sdk.exe
 !rust-native/target/x86_64-pc-windows-msvc/release/discord_social_sdk_rust.dll
+# Keep compiled binaries - Windows ARM64
+!rust-native/target/aarch64-pc-windows-msvc/
+!rust-native/target/aarch64-pc-windows-msvc/release/
+!rust-native/target/aarch64-pc-windows-msvc/release/lobbies-sdk.exe
+!rust-native/target/aarch64-pc-windows-msvc/release/discord_social_sdk_rust.dll
+# Keep compiled binaries - Linux x86_64
+!rust-native/target/x86_64-unknown-linux-gnu/
+!rust-native/target/x86_64-unknown-linux-gnu/release/
+!rust-native/target/x86_64-unknown-linux-gnu/release/lobbies-sdk
+!rust-native/target/x86_64-unknown-linux-gnu/release/libdiscord_social_sdk_rust.so
+# Keep compiled binaries - Linux ARM64
+!rust-native/target/aarch64-unknown-linux-gnu/
+!rust-native/target/aarch64-unknown-linux-gnu/release/
+!rust-native/target/aarch64-unknown-linux-gnu/release/lobbies-sdk
+!rust-native/target/aarch64-unknown-linux-gnu/release/libdiscord_social_sdk_rust.so
+# Keep compiled binaries - macOS Intel x86_64
+!rust-native/target/x86_64-apple-darwin/
+!rust-native/target/x86_64-apple-darwin/release/
+!rust-native/target/x86_64-apple-darwin/release/lobbies-sdk
+!rust-native/target/x86_64-apple-darwin/release/libdiscord_social_sdk_rust.dylib
+# Keep compiled binaries - macOS ARM64 (Apple Silicon)
+!rust-native/target/aarch64-apple-darwin/
+!rust-native/target/aarch64-apple-darwin/release/
+!rust-native/target/aarch64-apple-darwin/release/lobbies-sdk
+!rust-native/target/aarch64-apple-darwin/release/libdiscord_social_sdk_rust.dylib
 !native/build/Release/
 *.rlib
 *.so

@@ -2,7 +2,7 @@
   "name": "lobbies-sdk",
   "displayName": "Discord Lobbies SDK",
   "description": "Lobbies SDK integration in VS Code with messaging and voice",
-  "version": "0.6.0",
+  "version": "0.0.6",
   "publisher": "Lukodiablo0986",
   "icon": "media/logo.png",
   "author": {
